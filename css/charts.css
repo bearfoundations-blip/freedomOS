@@ -1,0 +1,332 @@
+/* ============================================================
+   Freedom OS — Charts
+   File: css/charts.css
+   ============================================================ */
+
+/* Chart Container */
+.chart-container {
+  position: relative;
+  width: 100%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  overflow: hidden;
+}
+
+.chart-container canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.chart-title {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.chart-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 300px;
+}
+
+.chart-wrapper canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.chart-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Chart Legend */
+.chart-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+  user-select: none;
+}
+
+.chart-legend-item:hover {
+  color: var(--color-text);
+}
+
+.chart-legend-item.disabled {
+  opacity: 0.4;
+}
+
+.chart-legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.chart-legend-label {
+  white-space: nowrap;
+}
+
+/* Chart Tooltip */
+.chart-tooltip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 50;
+  background-color: var(--color-surface-elevated);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-sm) var(--space-md);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.875rem;
+  color: var(--color-text);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  max-width: 240px;
+}
+
+.chart-tooltip.visible {
+  opacity: 1;
+}
+
+.chart-tooltip-title {
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+  color: var(--color-text);
+}
+
+.chart-tooltip-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary);
+}
+
+.chart-tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xs);
+}
+
+.chart-tooltip-row:last-child {
+  margin-bottom: 0;
+}
+
+/* Chart Ghost (empty data state) */
+.chart-ghost {
+  position: relative;
+}
+
+.chart-ghost .chart-grid-line {
+  stroke: var(--color-border-subtle);
+  opacity: 0.35;
+}
+
+.chart-ghost .chart-axis-text {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  fill: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Chart Specific Types */
+.chart-bar {
+  min-height: 320px;
+}
+
+.chart-line {
+  min-height: 320px;
+}
+
+.chart-donut {
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-donut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.chart-donut-value {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-donut-label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-top: var(--space-xs);
+}
+
+/* Chart Grid Lines */
+.chart-grid-line {
+  stroke: var(--color-border-subtle);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.chart-axis-line {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.chart-axis-text {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  fill: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Chart Data Elements */
+.chart-bar-rect {
+  transition: fill var(--transition-fast);
+  cursor: pointer;
+}
+
+.chart-bar-rect:hover {
+  filter: brightness(1.2);
+}
+
+.chart-line-path {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.chart-line-area {
+  opacity: 0.15;
+}
+
+.chart-line-dot {
+  r: 4;
+  transition: r var(--transition-fast), filter var(--transition-fast);
+  cursor: pointer;
+}
+
+.chart-line-dot:hover {
+  r: 6;
+  filter: drop-shadow(0 0 4px var(--color-primary-glow));
+}
+
+.chart-donut-segment {
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+  cursor: pointer;
+  transform-origin: center;
+}
+
+.chart-donut-segment:hover {
+  transform: scale(1.03);
+  opacity: 0.9;
+}
+
+/* Chart Loading State */
+.chart-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.chart-loading-skeleton {
+  width: 100%;
+  height: 300px;
+  background: linear-gradient(90deg, var(--color-surface) 25%, var(--color-surface-elevated) 50%, var(--color-surface) 75%);
+  background-size: 200% 100%;
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+/* Chart Empty State */
+.chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: var(--space-xl);
+}
+
+.chart-empty-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--space-md);
+  color: var(--color-text-muted);
+}
+
+.chart-empty-text {
+  font-size: 0.9375rem;
+}
+
+/* Responsive Charts */
+@media (max-width: 768px) {
+  .chart-container {
+    padding: var(--space-md);
+  }
+
+  .chart-wrapper {
+    min-height: 240px;
+  }
+
+  .chart-legend {
+    gap: var(--space-sm);
+  }
+
+  .chart-donut-value {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .chart-wrapper {
+    min-height: 200px;
+  }
+}

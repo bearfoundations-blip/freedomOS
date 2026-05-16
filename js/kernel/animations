@@ -1,0 +1,151 @@
+// ============================================================
+// Freedom OS — Animation Engine
+// File: js/kernel/animations.js
+// Depends: utils.js, events.js
+// Provides: scroll reveals, staggers, count-ups, view cleanup
+// ============================================================
+
+(function() {
+  'use strict';
+
+  if (typeof FreedomOS === 'undefined' || !FreedomOS.emit) {
+    throw new Error('FreedomOS.animations requires utils.js and events.js first.');
+  }
+
+  var _observers = [];
+  var _rafIds = [];
+
+  var EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+
+  function _observe(selector, options) {
+    options = options || {};
+    var container = options.container || document.getElementById('content');
+    if (!container) return null;
+
+    var elements = container.querySelectorAll(selector);
+    if (!elements.length) return null;
+
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          var el = entry.target;
+          var delay = parseFloat(el.dataset.revealDelay) || 0;
+          if (delay > 0) {
+            setTimeout(function() { el.classList.add('is-revealed'); }, delay);
+          } else {
+            el.classList.add('is-revealed');
+          }
+          observer.unobserve(el);
+        }
+      });
+    }, {
+      threshold: options.threshold || 0.08,
+      rootMargin: options.rootMargin || '0px 0px -30px 0px'
+    });
+
+    elements.forEach(function(el) {
+      el.style.transitionTimingFunction = EASING;
+      observer.observe(el);
+    });
+
+    _observers.push(observer);
+    return observer;
+  }
+
+  FreedomOS.animate = {
+    reveal: function(selector, options) {
+      return _observe(selector, options);
+    },
+
+    stagger: function(containerSelector, childSelector, options) {
+      options = options || {};
+      var container = document.querySelector(containerSelector);
+      if (!container) return;
+      var children = container.querySelectorAll(childSelector || ':scope > *');
+      children.forEach(function(child, i) {
+        child.classList.add('reveal', 'reveal-up');
+        child.dataset.revealDelay = (i * (options.stagger || 60)) + '';
+      });
+      return _observe('.reveal', options);
+    },
+
+    countUp: function(selector, options) {
+      options = options || {};
+      var elements = document.querySelectorAll(selector);
+      if (!elements.length) return;
+
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            var el = entry.target;
+            var target = parseFloat(el.dataset.countTarget);
+            if (isNaN(target)) return;
+
+            var duration = options.duration || 1400;
+            var prefix = el.dataset.countPrefix || '';
+            var suffix = el.dataset.countSuffix || '';
+            var decimals = parseInt(el.dataset.countDecimals) || 0;
+            var startTime = null;
+
+            function step(timestamp) {
+              if (!startTime) startTime = timestamp;
+              var progress = Math.min((timestamp - startTime) / duration, 1);
+              var eased = 1 - Math.pow(1 - progress, 3);
+              el.textContent = prefix + (target * eased).toFixed(decimals) + suffix;
+              if (progress < 1) {
+                _rafIds.push(requestAnimationFrame(step));
+              }
+            }
+            _rafIds.push(requestAnimationFrame(step));
+            observer.unobserve(el);
+          }
+        });
+      }, { threshold: 0.3 });
+
+      elements.forEach(function(el) { observer.observe(el); });
+      _observers.push(observer);
+    },
+
+    initView: function(container) {
+      if (!container) container = document.getElementById('content');
+      if (!container) return;
+
+      _observe('.reveal', { easing: EASING });
+      _observe('.reveal-up', { easing: EASING });
+      _observe('.reveal-down', { easing: EASING });
+      _observe('.reveal-left', { easing: EASING });
+      _observe('.reveal-right', { easing: EASING });
+      _observe('.reveal-scale', { easing: EASING });
+
+      container.querySelectorAll('.stagger-reveal').forEach(function(el) {
+        el.querySelectorAll(':scope > *').forEach(function(child, i) {
+          var hasReveal = ['reveal', 'reveal-up', 'reveal-down', 'reveal-left', 'reveal-right', 'reveal-scale'].some(function(c) {
+            return child.classList.contains(c);
+          });
+          if (!hasReveal) {
+            child.classList.add('reveal', 'reveal-up');
+          }
+          child.dataset.revealDelay = (i * 60) + '';
+        });
+      });
+
+      FreedomOS.animate.countUp('.count-up');
+    },
+
+    cleanup: function() {
+      _observers.forEach(function(obs) { obs.disconnect(); });
+      _observers = [];
+      _rafIds.forEach(function(id) { cancelAnimationFrame(id); });
+      _rafIds = [];
+    }
+  };
+
+  FreedomOS.on('view:enter', function() {
+    setTimeout(function() { FreedomOS.animate.initView(); }, 30);
+  });
+
+  FreedomOS.on('view:leave', function() {
+    FreedomOS.animate.cleanup();
+  });
+
+})();

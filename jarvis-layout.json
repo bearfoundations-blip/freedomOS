@@ -1,0 +1,1560 @@
+{
+  "generated": "2026-05-15T22:03:43.652Z",
+  "project": "Freedom OS",
+  "structure": {
+    "views": [],
+    "navigation": [],
+    "modals": [
+      "modal-overlay hidden"
+    ],
+    "hasTimerPage": false
+  },
+  "css": {
+    "files": [
+      "base.css",
+      "charts.css",
+      "components.css",
+      "layout.css",
+      "mobile.css",
+      "views.css"
+    ],
+    "componentPatterns": {
+      "base.css": {
+        "cards": [
+          {
+            "selector": ".glow-card",
+            "styles": "\r\n  position: relative;\r\n"
+          }
+        ],
+        "buttons": [],
+        "inputs": [],
+        "animations": [
+          {
+            "name": "fadeIn",
+            "body": " from { opacity: 0; "
+          },
+          {
+            "name": "fadeInUp",
+            "body": " from { opacity: 0; transform: translateY(12px); "
+          },
+          {
+            "name": "fadeInDown",
+            "body": " from { opacity: 0; transform: translateY(-12px); "
+          },
+          {
+            "name": "scaleIn",
+            "body": " from { opacity: 0; transform: scale(0.95); "
+          },
+          {
+            "name": "slideInRight",
+            "body": " from { opacity: 0; transform: translateX(100%); "
+          },
+          {
+            "name": "slideOutRight",
+            "body": " from { opacity: 1; transform: translateX(0); "
+          },
+          {
+            "name": "pulse",
+            "body": " 0%, 100% { opacity: 1; "
+          },
+          {
+            "name": "shake",
+            "body": " 0%, 100% { transform: translateX(0); "
+          },
+          {
+            "name": "float",
+            "body": " 0%, 100% { transform: translateY(0); "
+          },
+          {
+            "name": "marquee",
+            "body": " 0% { transform: translateX(0); "
+          },
+          {
+            "name": "gradientShift",
+            "body": " 0% { background-position: 0% 50%; "
+          },
+          {
+            "name": "countUp",
+            "body": " from { opacity: 0; transform: translateY(10px); "
+          },
+          {
+            "name": "skeletonPulse",
+            "body": " 0% { opacity: 0.4; "
+          },
+          {
+            "name": "confettiFall",
+            "body": " 0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; "
+          },
+          {
+            "name": "spin",
+            "body": " from { transform: rotate(0deg); "
+          },
+          {
+            "name": "flipIn",
+            "body": " from { opacity: 0; transform: perspective(600px) rotateY(90deg); "
+          },
+          {
+            "name": "shimmer",
+            "body": " 0% { transform: translateX(-100%); "
+          },
+          {
+            "name": "breathe",
+            "body": " 0%, 100% { opacity: 0.4; "
+          },
+          {
+            "name": "viewEnter",
+            "body": " from { opacity: 0; transform: translateY(14px) scale(0.995); "
+          },
+          {
+            "name": "ambientFloat",
+            "body": " 0%, 100% { transform: translate(0, 0) scale(1); "
+          },
+          {
+            "name": "navPulse",
+            "body": " 0%, 100% { opacity: 1; box-shadow: 0 0 12px var(--color-primary-glow); "
+          },
+          {
+            "name": "tabFadeIn",
+            "body": " from { opacity: 0; transform: translateY(10px); "
+          }
+        ],
+        "glows": [
+          "radial-gradient(circle, var(--color-primary-glow) 0%, transparent 70%)",
+          "radial-gradient(ellipse at center, black 40%, transparent 80%)",
+          "box-shadow: var(--shadow-lg), 0 0 40px rgba(0,0,0,0.4)",
+          "box-shadow: 0 0 12px var(--color-primary-glow)",
+          "box-shadow: 0 0 12px var(--color-primary-glow)",
+          "box-shadow: 0 0 3px var(--color-primary-glow)"
+        ],
+        "glass": [
+          "backdrop-filter: blur(20px)",
+          "backdrop-filter: blur(20px)",
+          "background: rgba(255, 255, 255, 0.03)"
+        ]
+      },
+      "charts.css": {
+        "cards": [],
+        "buttons": [],
+        "inputs": [],
+        "animations": [],
+        "glows": [],
+        "glass": [
+          "backdrop-filter: blur(12px)",
+          "backdrop-filter: blur(12px)"
+        ]
+      },
+      "components.css": {
+        "cards": [
+          {
+            "selector": ".cs-card",
+            "styles": "\r\n  background: linear-gradient(145deg, var(--color-surface), rgba(26,26,37,0.6));\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-lg);\r\n  transition: all var(--transition-base);\r\n  positi"
+          },
+          {
+            "selector": ".cs-perf-card",
+            "styles": "\r\n  background: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-lg);\r\n  transition: all var(--transition-base);\r\n  position:"
+          },
+          {
+            "selector": ".cs-platform-card",
+            "styles": "\r\n  background: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-lg);\r\n"
+          },
+          {
+            "selector": ".cs-hook-card",
+            "styles": "\r\n  background: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-lg);\r\n"
+          },
+          {
+            "selector": ".cs-script-card",
+            "styles": "\r\n  background: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-lg);\r\n"
+          },
+          {
+            "selector": ".cs-perf-card",
+            "styles": "\r\n  background: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-lg);\r\n  text-align: center;\r\n"
+          },
+          {
+            "selector": ".quick-stat-card",
+            "styles": "\r\n  background: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-xl);\r\n  display: flex;\r\n  flex-direction: column;\r\n  align-i"
+          },
+          {
+            "selector": ".dashboard-section-card",
+            "styles": "\r\n  background: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-xl);\r\n  padding: var(--space-xl);\r\n  transition: all var(--transition-base);\r\n"
+          },
+          {
+            "selector": ".section-card-header",
+            "styles": "\r\n  display: flex;\r\n  justify-content: space-between;\r\n  align-items: center;\r\n  margin-bottom: var(--space-lg);\r\n  padding-bottom: var(--space-md);\r\n  border-bottom: 1px solid var(--color-border-subt"
+          },
+          {
+            "selector": ".section-card-title",
+            "styles": "\r\n  font-family: var(--font-display);\r\n  font-size: 1.125rem;\r\n  font-weight: 700;\r\n  letter-spacing: -0.02em;\r\n  color: var(--color-text);\r\n  display: flex;\r\n  align-items: center;\r\n  gap: var(--spac"
+          },
+          {
+            "selector": ".section-card-action",
+            "styles": "\r\n  background: var(--color-surface-elevated);\r\n  border: 1px solid var(--color-border);\r\n  color: var(--color-text-secondary);\r\n  width: 32px;\r\n  height: 32px;\r\n  border-radius: var(--radius-md);\r\n  "
+          },
+          {
+            "selector": ".dashboard-section-card",
+            "styles": "\r\n    padding: var(--space-lg);\r\n  "
+          }
+        ],
+        "buttons": [
+          {
+            "selector": ".btn",
+            "styles": "\r\n  display: inline-flex;\r\n  align-items: center;\r\n  justify-content: center;\r\n  gap: var(--space-sm);\r\n  padding: var(--space-sm) var(--space-md);\r\n  border-radius: var(--radius-md);\r\n  font-family: "
+          },
+          {
+            "selector": ".btn-primary",
+            "styles": "\r\n  background: linear-gradient(135deg, var(--color-primary), #00a8c6);\r\n  color: var(--color-text-inverse);\r\n  border-color: var(--color-primary);\r\n  box-shadow: 0 0 0 0 var(--color-primary-glow);\r\n "
+          },
+          {
+            "selector": ".btn-secondary",
+            "styles": "\r\n  background: var(--color-surface-elevated);\r\n  color: var(--color-text);\r\n  border-color: var(--color-border);\r\n"
+          },
+          {
+            "selector": ".btn-danger",
+            "styles": "\r\n  background: var(--color-danger);\r\n  color: var(--color-text-inverse);\r\n  border-color: var(--color-danger);\r\n"
+          },
+          {
+            "selector": ".btn-icon",
+            "styles": "\r\n  width: 44px;\r\n  height: 44px;\r\n  padding: 0;\r\n  border-radius: var(--radius-md);\r\n  background: transparent;\r\n  color: var(--color-text-muted);\r\n  border: 1px solid var(--color-border);\r\n  transit"
+          },
+          {
+            "selector": ".btn-close",
+            "styles": "\r\n  width: 32px;\r\n  height: 32px;\r\n  padding: 0;\r\n  background: transparent;\r\n  border: none;\r\n  color: var(--color-text-muted);\r\n  font-size: 1.25rem;\r\n  cursor: pointer;\r\n  border-radius: var(--radi"
+          },
+          {
+            "selector": ".cs-add-btn",
+            "styles": "\r\n  padding: var(--space-sm) var(--space-md);\r\n  font-size: 0.875rem;\r\n"
+          },
+          {
+            "selector": ".cs-icon-btn",
+            "styles": "\r\n  width: 28px;\r\n  height: 28px;\r\n  padding: 0;\r\n  background: transparent;\r\n  border: none;\r\n  color: var(--color-text-muted);\r\n  cursor: pointer;\r\n  border-radius: var(--radius-sm);\r\n  display: inl"
+          },
+          {
+            "selector": ".habit-check-btn",
+            "styles": "\r\n  width: 24px;\r\n  height: 24px;\r\n  border-radius: var(--radius-sm);\r\n  border: 2px solid var(--color-border);\r\n  background: transparent;\r\n  display: flex;\r\n  align-items: center;\r\n  justify-content"
+          },
+          {
+            "selector": ".habit-delete-btn",
+            "styles": "\r\n  width: 28px;\r\n  height: 28px;\r\n  border-radius: var(--radius-sm);\r\n  background: transparent;\r\n  border: none;\r\n  color: var(--color-text-muted);\r\n  display: flex;\r\n  align-items: center;\r\n  justi"
+          },
+          {
+            "selector": ".habit-delete-btn",
+            "styles": "\r\n  opacity: 1;\r\n"
+          },
+          {
+            "selector": ".intention-check-btn",
+            "styles": "\r\n  width: 24px;\r\n  height: 24px;\r\n  border-radius: var(--radius-sm);\r\n  border: 2px solid var(--color-border);\r\n  background: transparent;\r\n  display: flex;\r\n  align-items: center;\r\n  justify-content"
+          },
+          {
+            "selector": ".intention-delete-btn",
+            "styles": "\r\n  width: 28px;\r\n  height: 28px;\r\n  border-radius: var(--radius-sm);\r\n  background: transparent;\r\n  border: none;\r\n  color: var(--color-text-muted);\r\n  display: flex;\r\n  align-items: center;\r\n  justi"
+          },
+          {
+            "selector": ".intention-delete-btn",
+            "styles": "\r\n  opacity: 1;\r\n"
+          },
+          {
+            "selector": ".btn",
+            "styles": "\r\n  margin-top: var(--space-sm);\r\n"
+          },
+          {
+            "selector": ".fab-btn",
+            "styles": "\r\n  display: flex;\r\n  align-items: center;\r\n  gap: var(--space-sm);\r\n  padding: var(--space-sm) var(--space-lg);\r\n  border-radius: var(--radius-lg);\r\n  font-size: 0.875rem;\r\n  font-weight: 600;\r\n  cur"
+          }
+        ],
+        "inputs": [],
+        "animations": [
+          {
+            "name": "modalIn",
+            "body": " from { opacity: 0; transform: scale(0.9) translateY(20px); "
+          },
+          {
+            "name": "fadeIn",
+            "body": " from { opacity: 0; transform: translateY(8px); "
+          },
+          {
+            "name": "breathe",
+            "body": " 0%, 100% { opacity: 1; transform: scale(1); "
+          },
+          {
+            "name": "shimmer",
+            "body": " 0% { transform: translateX(-100%); "
+          }
+        ],
+        "glows": [
+          "box-shadow: 0 2px 0 0 var(--color-primary), inset 0 0 0 1px var(--color-primary-glow)",
+          "box-shadow: 0 0 0 3px var(--color-primary-glow)",
+          "box-shadow: var(--shadow-lg), 0 0 30px rgba(0,0,0,0.3)",
+          "box-shadow: var(--shadow-lg), 0 0 40px rgba(0,0,0,0.3)",
+          "box-shadow: 0 0 12px var(--color-primary-glow)",
+          "box-shadow: 0 0 0 2px var(--color-primary-glow)",
+          "radial-gradient(circle, var(--color-primary-glow) 0%, transparent 70%)",
+          "box-shadow: 0 0 10px var(--color-primary-glow)",
+          "box-shadow: 0 0 10px var(--color-primary-glow)",
+          "box-shadow: 0 0 0 3px var(--color-primary-glow)",
+          "box-shadow: 0 0 0 3px var(--color-primary-glow)",
+          "box-shadow: var(--shadow-lg), 0 0 40px rgba(0,0,0,0.4)",
+          "box-shadow: 0 0 20px rgba(239, 68, 68, 0.4)"
+        ],
+        "glass": [
+          "background: rgba(0, 0, 0, 0.7)",
+          "backdrop-filter: blur(12px)",
+          "backdrop-filter: blur(12px)",
+          "background: rgba(239, 68, 68, 0.1)",
+          "background: rgba(239, 68, 68, 0.1)",
+          "background: rgba(239, 68, 68, 0.15)",
+          "background: rgba(245, 158, 11, 0.15)",
+          "background: rgba(59, 130, 246, 0.15)",
+          "background: rgba(239, 68, 68, 0.1)",
+          "backdrop-filter: blur(12px)"
+        ]
+      },
+      "layout.css": {
+        "cards": [],
+        "buttons": [],
+        "inputs": [],
+        "animations": [],
+        "glows": [],
+        "glass": [
+          "background: rgba(255, 255, 255, 0.03)",
+          "backdrop-filter: blur(20px)",
+          "backdrop-filter: blur(20px)",
+          "background: rgba(255, 255, 255, 0.03)",
+          "backdrop-filter: blur(20px)",
+          "backdrop-filter: blur(20px)",
+          "backdrop-filter: blur(8px)"
+        ]
+      },
+      "mobile.css": {
+        "cards": [
+          {
+            "selector": ".person-card",
+            "styles": "\r\n    min-height: 44px;\r\n  "
+          },
+          {
+            "selector": ".quick-stat-card",
+            "styles": "\r\n    padding: var(--space-lg);\r\n  "
+          }
+        ],
+        "buttons": [
+          {
+            "selector": ".mobile-capture-btn",
+            "styles": "\r\n  width: 44px;\r\n  height: 44px;\r\n  border-radius: var(--radius-md);\r\n  background: transparent;\r\n  border: none;\r\n  color: var(--color-text-secondary);\r\n  display: flex;\r\n  align-items: center;\r\n  j"
+          },
+          {
+            "selector": ".btn",
+            "styles": "\r\n    width: 100%;\r\n    justify-content: center;\r\n  "
+          },
+          {
+            "selector": ".intention-delete-btn",
+            "styles": "\r\n    min-width: 44px;\r\n    min-height: 44px;\r\n  "
+          },
+          {
+            "selector": ".btn",
+            "styles": "\r\n    flex: 1;\r\n  "
+          }
+        ],
+        "inputs": [],
+        "animations": [
+          {
+            "name": "fadeOut",
+            "body": " to { opacity: 0; "
+          },
+          {
+            "name": "slideUp",
+            "body": " from { opacity: 0; transform: translateY(40px); "
+          }
+        ],
+        "glows": [
+          "box-shadow: 0 0 8px var(--color-primary-glow)",
+          "box-shadow: 0 4px 20px var(--color-primary-glow), 0 0 0 4px var(--color-bg)",
+          "box-shadow: 0 2px 10px var(--color-primary-glow), 0 0 0 4px var(--color-bg)",
+          "box-shadow: 0 0 6px var(--color-success)"
+        ],
+        "glass": [
+          "background: rgba(10, 10, 15, 0.85)",
+          "backdrop-filter: blur(20px)",
+          "backdrop-filter: blur(20px)",
+          "background: rgba(10, 10, 15, 0.92)",
+          "backdrop-filter: blur(24px)",
+          "backdrop-filter: blur(24px)",
+          "background: rgba(0, 0, 0, 0.6)",
+          "backdrop-filter: blur(4px)",
+          "backdrop-filter: blur(4px)",
+          "background: rgba(0, 0, 0, 0.6)",
+          "backdrop-filter: blur(4px)",
+          "backdrop-filter: blur(4px)",
+          "background: rgba(0, 0, 0, 0.5)"
+        ]
+      },
+      "views.css": {
+        "cards": [
+          {
+            "selector": ".quick-stat-card",
+            "styles": "\r\n  background: linear-gradient(145deg, var(--color-surface), rgba(26, 26, 37, 0.5));\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-xl);\r\n  disp"
+          },
+          {
+            "selector": ".dashboard-section-card",
+            "styles": "\r\n  background-color: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-xl);\r\n  padding: var(--space-xl);\r\n  display: flex;\r\n  flex-direction: column;\r\n  g"
+          },
+          {
+            "selector": ".section-card-header",
+            "styles": "\r\n  display: flex;\r\n  align-items: center;\r\n  justify-content: space-between;\r\n  gap: var(--space-md);\r\n  padding-bottom: var(--space-md);\r\n  margin-bottom: var(--space-sm);\r\n  border-bottom: 1px soli"
+          },
+          {
+            "selector": ".section-card-title",
+            "styles": "\r\n  font-family: var(--font-display);\r\n  font-size: 1.125rem;\r\n  font-weight: 700;\r\n  letter-spacing: -0.02em;\r\n  color: var(--color-text);\r\n  display: flex;\r\n  align-items: center;\r\n  gap: var(--spac"
+          },
+          {
+            "selector": ".section-card-action",
+            "styles": "\r\n  background: var(--color-surface-elevated);\r\n  border: 1px solid var(--color-border);\r\n  color: var(--color-text-secondary);\r\n  width: 32px;\r\n  height: 32px;\r\n  border-radius: var(--radius-md);\r\n  "
+          },
+          {
+            "selector": ".dashboard-card",
+            "styles": "\r\n  background-color: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-lg);\r\n  transition: transform var(--transition-base), "
+          },
+          {
+            "selector": ".daylog-preview-card",
+            "styles": "\r\n  cursor: pointer;\r\n  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);\r\n  position: relative;\r\n  overflow: hidden;\r\n"
+          },
+          {
+            "selector": ".project-card",
+            "styles": "\r\n  background-color: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-lg);\r\n  display: flex;\r\n  flex-direction: column;\r\n  g"
+          },
+          {
+            "selector": ".project-card-header",
+            "styles": "\r\n  display: flex;\r\n  align-items: flex-start;\r\n  justify-content: space-between;\r\n  gap: var(--space-md);\r\n"
+          },
+          {
+            "selector": ".project-card-title",
+            "styles": "\r\n  font-family: var(--font-display);\r\n  font-size: 1.125rem;\r\n  font-weight: 700;\r\n  letter-spacing: -0.02em;\r\n  color: var(--color-text);\r\n"
+          },
+          {
+            "selector": ".project-card-meta",
+            "styles": "\r\n  display: flex;\r\n  align-items: center;\r\n  gap: var(--space-sm);\r\n  font-size: 0.875rem;\r\n  color: var(--color-text-secondary);\r\n"
+          },
+          {
+            "selector": ".project-card-stats",
+            "styles": "\r\n  display: grid;\r\n  grid-template-columns: 1fr 1fr;\r\n  gap: var(--space-md);\r\n  margin-top: auto;\r\n"
+          },
+          {
+            "selector": ".warroom-section-card",
+            "styles": "\r\n  background: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  overflow: hidden;\r\n"
+          },
+          {
+            "selector": ".pipeline-card",
+            "styles": "\r\n  background-color: var(--color-surface-elevated);\r\n  border: 1px solid var(--color-border-subtle);\r\n  border-radius: var(--radius-md);\r\n  padding: var(--space-md);\r\n  margin-bottom: var(--space-sm)"
+          },
+          {
+            "selector": ".stage-win-card",
+            "styles": "\r\n  background-color: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-lg);\r\n  max-width: 300px;\r\n  animation: flipIn 600ms e"
+          },
+          {
+            "selector": ".stage-win-card-title",
+            "styles": "\r\n  font-weight: 700;\r\n  color: var(--color-text);\r\n  margin-bottom: var(--space-sm);\r\n"
+          },
+          {
+            "selector": ".stage-win-card-date",
+            "styles": "\r\n  font-size: 0.875rem;\r\n  color: var(--color-text-muted);\r\n"
+          },
+          {
+            "selector": ".project-pll-card",
+            "styles": "\r\n  display: grid;\r\n  grid-template-columns: 4px 1fr auto auto;\r\n  align-items: center;\r\n  gap: var(--space-md);\r\n  background: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  borde"
+          },
+          {
+            "selector": ".person-card",
+            "styles": "\r\n  background-color: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-lg);\r\n  display: flex;\r\n  flex-direction: column;\r\n  g"
+          },
+          {
+            "selector": ".person-card-header",
+            "styles": "\r\n  display: flex;\r\n  align-items: center;\r\n  gap: var(--space-md);\r\n"
+          },
+          {
+            "selector": ".win-card",
+            "styles": "\r\n  break-inside: avoid;\r\n  background-color: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-lg);\r\n  margin-bottom: var(--s"
+          },
+          {
+            "selector": ".win-card-image",
+            "styles": "\r\n  width: 100%;\r\n  border-radius: var(--radius-md);\r\n  margin-bottom: var(--space-md);\r\n  aspect-ratio: 16 / 9;\r\n  object-fit: cover;\r\n  background-color: var(--color-surface-elevated);\r\n"
+          },
+          {
+            "selector": ".win-card-title",
+            "styles": "\r\n  font-family: var(--font-display);\r\n  font-size: 1.125rem;\r\n  font-weight: 700;\r\n  margin-bottom: var(--space-sm);\r\n  letter-spacing: -0.02em;\r\n"
+          },
+          {
+            "selector": ".win-card-category",
+            "styles": "\r\n  display: inline-block;\r\n  margin-bottom: var(--space-sm);\r\n"
+          },
+          {
+            "selector": ".win-card-date",
+            "styles": "\r\n  font-size: 0.875rem;\r\n  color: var(--color-text-muted);\r\n"
+          },
+          {
+            "selector": ".letter-card",
+            "styles": "\r\n  background-color: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-lg);\r\n  position: relative;\r\n  overflow: hidden;\r\n  tr"
+          },
+          {
+            "selector": ".review-card",
+            "styles": "\r\n  background-color: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-lg);\r\n  transition: transform var(--transition-base);\r"
+          },
+          {
+            "selector": ".stat-card",
+            "styles": "\r\n  background-color: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-lg);\r\n  text-align: center;\r\n  transition: transform v"
+          },
+          {
+            "selector": ".analytics-card",
+            "styles": "\r\n  background-color: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-lg);\r\n  padding: var(--space-lg);\r\n"
+          },
+          {
+            "selector": ".analytics-card-header",
+            "styles": "\r\n  display: flex;\r\n  align-items: center;\r\n  justify-content: space-between;\r\n  margin-bottom: var(--space-lg);\r\n"
+          },
+          {
+            "selector": ".analytics-card-title",
+            "styles": "\r\n  font-family: var(--font-display);\r\n  font-size: 1.125rem;\r\n  font-weight: 700;\r\n"
+          },
+          {
+            "selector": ".quick-stat-card",
+            "styles": "\r\n  background:\r\n    linear-gradient(145deg, var(--color-surface), rgba(26, 26, 37, 0.6));\r\n  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);\r\n"
+          },
+          {
+            "selector": ".project-pll-card",
+            "styles": "\r\n    grid-template-columns: 4px 1fr auto;\r\n    grid-template-rows: auto auto;\r\n  "
+          },
+          {
+            "selector": ".project-pll-card",
+            "styles": "\r\n    grid-template-columns: 4px 1fr;\r\n  "
+          },
+          {
+            "selector": ".daylog-sidebar-card",
+            "styles": "\r\n  background: var(--color-surface);\r\n  border: 1px solid var(--color-border);\r\n  border-radius: var(--radius-xl);\r\n  padding: var(--space-lg);\r\n  transition: all var(--transition-base);\r\n"
+          },
+          {
+            "selector": ".sidebar-card-title",
+            "styles": "\r\n  font-family: var(--font-display);\r\n  font-size: 1rem;\r\n  font-weight: 700;\r\n  color: var(--color-text);\r\n  margin-bottom: var(--space-md);\r\n  letter-spacing: -0.01em;\r\n"
+          }
+        ],
+        "buttons": [
+          {
+            "selector": ".habit-check-btn",
+            "styles": "\r\n  width: 24px;\r\n  height: 24px;\r\n  border-radius: var(--radius-sm);\r\n  border: 2px solid var(--color-border);\r\n  background: transparent;\r\n  display: flex;\r\n  align-items: center;\r\n  justify-content"
+          },
+          {
+            "selector": ".habit-delete-btn",
+            "styles": "\r\n  width: 28px;\r\n  height: 28px;\r\n  border-radius: var(--radius-sm);\r\n  background: transparent;\r\n  border: none;\r\n  color: var(--color-text-muted);\r\n  display: flex;\r\n  align-items: center;\r\n  justi"
+          },
+          {
+            "selector": ".habit-delete-btn",
+            "styles": "\r\n  opacity: 1;\r\n"
+          },
+          {
+            "selector": ".intention-check-btn",
+            "styles": "\r\n  width: 24px;\r\n  height: 24px;\r\n  border-radius: var(--radius-sm);\r\n  border: 2px solid var(--color-border);\r\n  background: transparent;\r\n  display: flex;\r\n  align-items: center;\r\n  justify-content"
+          },
+          {
+            "selector": ".intention-delete-btn",
+            "styles": "\r\n  width: 28px;\r\n  height: 28px;\r\n  border-radius: var(--radius-sm);\r\n  background: transparent;\r\n  border: none;\r\n  color: var(--color-text-muted);\r\n  display: flex;\r\n  align-items: center;\r\n  justi"
+          },
+          {
+            "selector": ".intention-delete-btn",
+            "styles": "\r\n  opacity: 1;\r\n"
+          },
+          {
+            "selector": ".btn",
+            "styles": "\r\n  margin-top: var(--space-sm);\r\n"
+          },
+          {
+            "selector": ".daylog-save-btn",
+            "styles": "\r\n  display: inline-flex;\r\n  align-items: center;\r\n  gap: var(--space-sm);\r\n  padding: var(--space-md) var(--space-xl);\r\n  font-size: 0.9375rem;\r\n  font-weight: 600;\r\n  transition: all 0.3s ease;\r\n"
+          }
+        ],
+        "inputs": [],
+        "animations": [
+          {
+            "name": "heroAtmosphere",
+            "body": " 0%, 100% { background-position: 0% 50%, 100% 20%, 0% 0%; "
+          },
+          {
+            "name": "tickerScroll",
+            "body": " 0% { transform: translateX(0); "
+          },
+          {
+            "name": "numberPulse",
+            "body": " 0%, 100% { text-shadow: 0 0 20px rgba(0, 212, 170, 0.3), 0 0 40px rgba(0, 212, 170, 0.15), 0 0 80px rgba(0, 212, 170, 0.08); "
+          },
+          {
+            "name": "separatorBlink",
+            "body": " 0%, 100% { opacity: 0.3; "
+          },
+          {
+            "name": "breathe",
+            "body": " 0%, 100% { transform: translateY(0); "
+          },
+          {
+            "name": "shimmer",
+            "body": " 0% { transform: translateX(-100%); "
+          },
+          {
+            "name": "flameFlicker",
+            "body": " 0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; "
+          }
+        ],
+        "glows": [
+          "radial-gradient(circle, var(--color-primary-glow) 0%, transparent 70%)",
+          "radial-gradient(circle, var(--color-primary-glow) 0%, transparent 70%)",
+          "box-shadow: 0 0 10px var(--color-primary-glow)",
+          "box-shadow: 0 0 10px var(--color-primary-glow)",
+          "box-shadow: 0 0 0 3px var(--color-primary-glow)",
+          "box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 212, 170, 0.08)",
+          "box-shadow: 0 0 0 3px var(--color-primary-glow)",
+          "radial-gradient(at 40% 20%, rgba(0, 212, 170, 0.03) 0px, transparent 50%),\r\n    radial-gradient(at 80% 0%, rgba(99, 102, 241, 0.03) 0px, transparent 5",
+          "radial-gradient(ellipse at 20% 50%, rgba(0, 212, 170, 0.08) 0%, transparent 50%),\r\n    radial-gradient(ellipse at 80% 20%, rgba(124, 58, 237, 0.06) 0%",
+          "box-shadow:\r\n    0 8px 32px rgba(0, 0, 0, 0.3),\r\n    0 0 20px rgba(0, 212, 170, 0.08)",
+          "box-shadow: 0 0 20px rgba(0, 212, 170, 0.3)",
+          "box-shadow: 0 0 10px currentColor",
+          "radial-gradient(ellipse at 20% 50%, rgba(0, 212, 170, 0.06) 0%, transparent 50%),\r\n    radial-gradient(ellipse at 80% 20%, rgba(124, 58, 237, 0.04) 0%",
+          "box-shadow: 0 0 20px rgba(0, 212, 170, 0.05)"
+        ],
+        "glass": [
+          "background: rgba(239, 68, 68, 0.1)",
+          "background: rgba(239, 68, 68, 0.15)",
+          "background: rgba(245, 158, 11, 0.15)",
+          "background: rgba(59, 130, 246, 0.15)",
+          "background: rgba(239, 68, 68, 0.1)",
+          "background: rgba(245, 158, 11, 0.1)",
+          "backdrop-filter: blur(12px)",
+          "backdrop-filter: blur(12px)",
+          "backdrop-filter: blur(12px)",
+          "backdrop-filter: blur(12px)",
+          "background: rgba(255, 255, 255, 0.03)",
+          "backdrop-filter: blur(8px)",
+          "background: rgba(0, 212, 170, 0.08)",
+          "backdrop-filter: blur(8px)"
+        ]
+      }
+    },
+    "allGlows": [
+      {
+        "file": "views.css",
+        "value": "radial-gradient(circle, var(--color-primary-glow) 0%, transparent 70%)"
+      },
+      {
+        "file": "base.css",
+        "value": "radial-gradient(ellipse at center, black 40%, transparent 80%)"
+      },
+      {
+        "file": "components.css",
+        "value": "box-shadow: var(--shadow-lg), 0 0 40px rgba(0,0,0,0.4)"
+      },
+      {
+        "file": "components.css",
+        "value": "box-shadow: 0 0 12px var(--color-primary-glow)"
+      },
+      {
+        "file": "base.css",
+        "value": "box-shadow: 0 0 3px var(--color-primary-glow)"
+      },
+      {
+        "file": "components.css",
+        "value": "box-shadow: 0 2px 0 0 var(--color-primary), inset 0 0 0 1px var(--color-primary-glow)"
+      },
+      {
+        "file": "views.css",
+        "value": "box-shadow: 0 0 0 3px var(--color-primary-glow)"
+      },
+      {
+        "file": "components.css",
+        "value": "box-shadow: var(--shadow-lg), 0 0 30px rgba(0,0,0,0.3)"
+      },
+      {
+        "file": "components.css",
+        "value": "box-shadow: var(--shadow-lg), 0 0 40px rgba(0,0,0,0.3)"
+      },
+      {
+        "file": "components.css",
+        "value": "box-shadow: 0 0 0 2px var(--color-primary-glow)"
+      },
+      {
+        "file": "views.css",
+        "value": "box-shadow: 0 0 10px var(--color-primary-glow)"
+      },
+      {
+        "file": "components.css",
+        "value": "box-shadow: 0 0 20px rgba(239, 68, 68, 0.4)"
+      },
+      {
+        "file": "mobile.css",
+        "value": "box-shadow: 0 0 8px var(--color-primary-glow)"
+      },
+      {
+        "file": "mobile.css",
+        "value": "box-shadow: 0 4px 20px var(--color-primary-glow), 0 0 0 4px var(--color-bg)"
+      },
+      {
+        "file": "mobile.css",
+        "value": "box-shadow: 0 2px 10px var(--color-primary-glow), 0 0 0 4px var(--color-bg)"
+      },
+      {
+        "file": "mobile.css",
+        "value": "box-shadow: 0 0 6px var(--color-success)"
+      },
+      {
+        "file": "views.css",
+        "value": "box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 212, 170, 0.08)"
+      },
+      {
+        "file": "views.css",
+        "value": "radial-gradient(at 40% 20%, rgba(0, 212, 170, 0.03) 0px, transparent 50%),\r\n    radial-gradient(at 80% 0%, rgba(99, 102, 241, 0.03) 0px, transparent 5"
+      },
+      {
+        "file": "views.css",
+        "value": "radial-gradient(ellipse at 20% 50%, rgba(0, 212, 170, 0.08) 0%, transparent 50%),\r\n    radial-gradient(ellipse at 80% 20%, rgba(124, 58, 237, 0.06) 0%"
+      },
+      {
+        "file": "views.css",
+        "value": "box-shadow:\r\n    0 8px 32px rgba(0, 0, 0, 0.3),\r\n    0 0 20px rgba(0, 212, 170, 0.08)"
+      },
+      {
+        "file": "views.css",
+        "value": "box-shadow: 0 0 20px rgba(0, 212, 170, 0.3)"
+      },
+      {
+        "file": "views.css",
+        "value": "box-shadow: 0 0 10px currentColor"
+      },
+      {
+        "file": "views.css",
+        "value": "radial-gradient(ellipse at 20% 50%, rgba(0, 212, 170, 0.06) 0%, transparent 50%),\r\n    radial-gradient(ellipse at 80% 20%, rgba(124, 58, 237, 0.04) 0%"
+      },
+      {
+        "file": "views.css",
+        "value": "box-shadow: 0 0 20px rgba(0, 212, 170, 0.05)"
+      }
+    ],
+    "allAnimations": [
+      {
+        "file": "components.css",
+        "name": "fadeIn"
+      },
+      {
+        "file": "base.css",
+        "name": "fadeInUp"
+      },
+      {
+        "file": "base.css",
+        "name": "fadeInDown"
+      },
+      {
+        "file": "base.css",
+        "name": "scaleIn"
+      },
+      {
+        "file": "base.css",
+        "name": "slideInRight"
+      },
+      {
+        "file": "base.css",
+        "name": "slideOutRight"
+      },
+      {
+        "file": "base.css",
+        "name": "pulse"
+      },
+      {
+        "file": "base.css",
+        "name": "shake"
+      },
+      {
+        "file": "base.css",
+        "name": "float"
+      },
+      {
+        "file": "base.css",
+        "name": "marquee"
+      },
+      {
+        "file": "base.css",
+        "name": "gradientShift"
+      },
+      {
+        "file": "base.css",
+        "name": "countUp"
+      },
+      {
+        "file": "base.css",
+        "name": "skeletonPulse"
+      },
+      {
+        "file": "base.css",
+        "name": "confettiFall"
+      },
+      {
+        "file": "base.css",
+        "name": "spin"
+      },
+      {
+        "file": "base.css",
+        "name": "flipIn"
+      },
+      {
+        "file": "views.css",
+        "name": "shimmer"
+      },
+      {
+        "file": "views.css",
+        "name": "breathe"
+      },
+      {
+        "file": "base.css",
+        "name": "viewEnter"
+      },
+      {
+        "file": "base.css",
+        "name": "ambientFloat"
+      },
+      {
+        "file": "base.css",
+        "name": "navPulse"
+      },
+      {
+        "file": "base.css",
+        "name": "tabFadeIn"
+      },
+      {
+        "file": "components.css",
+        "name": "modalIn"
+      },
+      {
+        "file": "mobile.css",
+        "name": "fadeOut"
+      },
+      {
+        "file": "mobile.css",
+        "name": "slideUp"
+      },
+      {
+        "file": "views.css",
+        "name": "heroAtmosphere"
+      },
+      {
+        "file": "views.css",
+        "name": "tickerScroll"
+      },
+      {
+        "file": "views.css",
+        "name": "numberPulse"
+      },
+      {
+        "file": "views.css",
+        "name": "separatorBlink"
+      },
+      {
+        "file": "views.css",
+        "name": "flameFlicker"
+      }
+    ]
+  },
+  "js": {
+    "modules": [
+      {
+        "path": "js/kernel/core.js",
+        "exports": [],
+        "selectors": [
+          ".nav-item"
+        ],
+        "events": [],
+        "hasRouter": true,
+        "hasState": true,
+        "hasAnimations": false,
+        "size": 17568
+      },
+      {
+        "path": "js/kernel/events.js",
+        "exports": [],
+        "selectors": [],
+        "events": [],
+        "hasRouter": false,
+        "hasState": true,
+        "hasAnimations": false,
+        "size": 2282
+      },
+      {
+        "path": "js/kernel/router.js",
+        "exports": [],
+        "selectors": [],
+        "events": [],
+        "hasRouter": true,
+        "hasState": true,
+        "hasAnimations": false,
+        "size": 4097
+      },
+      {
+        "path": "js/kernel/timer.js",
+        "exports": [],
+        "selectors": [],
+        "events": [],
+        "hasRouter": false,
+        "hasState": true,
+        "hasAnimations": false,
+        "size": 3851
+      },
+      {
+        "path": "js/kernel/ui.js",
+        "exports": [],
+        "selectors": [
+          ".toast__progressbar-fill",
+          ".modal",
+          ".modal__close",
+          ".modal__confirm",
+          ".modal__cancel",
+          "input, textarea, select"
+        ],
+        "events": [
+          "click",
+          "keydown"
+        ],
+        "hasRouter": false,
+        "hasState": false,
+        "hasAnimations": true,
+        "size": 6340
+      },
+      {
+        "path": "js/kernel/utils.js",
+        "exports": [],
+        "selectors": [],
+        "events": [],
+        "hasRouter": false,
+        "hasState": false,
+        "hasAnimations": false,
+        "size": 4081
+      },
+      {
+        "path": "js/modules/analytics.js",
+        "exports": [],
+        "selectors": [
+          ".view-analytics",
+          ".analytics-range-btn"
+        ],
+        "events": [
+          "click",
+          "resize"
+        ],
+        "hasRouter": false,
+        "hasState": true,
+        "hasAnimations": true,
+        "size": 25716
+      },
+      {
+        "path": "js/modules/creatorStudio.js",
+        "exports": [],
+        "selectors": [
+          ".cs-follower-chart",
+          ".cs-pipeline-card",
+          ".cs-kanban-col",
+          ".cs-tab",
+          ".cs-section",
+          ".cs-pipeline"
+        ],
+        "events": [
+          "input",
+          "dragstart",
+          "dragend",
+          "dragover",
+          "dragleave",
+          "drop"
+        ],
+        "hasRouter": false,
+        "hasState": true,
+        "hasAnimations": true,
+        "size": 42253
+      },
+      {
+        "path": "js/modules/dashboard.js",
+        "exports": [],
+        "selectors": [
+          ".view-dashboard",
+          ".dashboard-section-card, .operator-score-section, .quick-stat-card",
+          ".stat-number"
+        ],
+        "events": [
+          "click",
+          "input"
+        ],
+        "hasRouter": false,
+        "hasState": true,
+        "hasAnimations": true,
+        "size": 41944
+      },
+      {
+        "path": "js/modules/dayLog.js",
+        "exports": [],
+        "selectors": [
+          ".nav-item"
+        ],
+        "events": [],
+        "hasRouter": true,
+        "hasState": true,
+        "hasAnimations": false,
+        "size": 15798
+      },
+      {
+        "path": "js/modules/finance.js",
+        "exports": [],
+        "selectors": [
+          "#fin-chart",
+          ".summary-value",
+          "#fin-ledger-body",
+          ".sortable",
+          ".filter-pill",
+          "#fin-filter-search",
+          "#fin-filter-project",
+          "#fin-filter-type",
+          "#fin-filter-from",
+          "#fin-filter-to"
+        ],
+        "events": [
+          "resize",
+          "change",
+          "input",
+          "click"
+        ],
+        "hasRouter": true,
+        "hasState": true,
+        "hasAnimations": true,
+        "size": 35777
+      },
+      {
+        "path": "js/modules/letters.js",
+        "exports": [],
+        "selectors": [
+          "#letter-title",
+          "#letter-content",
+          "#letter-unlock-date",
+          "#letter-char-count",
+          "#letters-save-indicator",
+          "#btn-save-letter",
+          ".seal-lock",
+          "#btn-clear-draft",
+          ".btn-delete-letter",
+          ".countdown-timer"
+        ],
+        "events": [
+          "input",
+          "click"
+        ],
+        "hasRouter": false,
+        "hasState": true,
+        "hasAnimations": true,
+        "size": 16756
+      },
+      {
+        "path": "js/modules/people.js",
+        "exports": [],
+        "selectors": [
+          ".people-grid",
+          ".view-btn",
+          ".interact-btn",
+          "#people-search",
+          "#people-filter-category",
+          "#people-filter-followup",
+          "#people-add-btn",
+          "#people-add-first",
+          "#people-import-btn",
+          "#people-import-file"
+        ],
+        "events": [
+          "click",
+          "input",
+          "change"
+        ],
+        "hasRouter": true,
+        "hasState": true,
+        "hasAnimations": false,
+        "size": 26089
+      },
+      {
+        "path": "js/modules/projects.js",
+        "exports": [],
+        "selectors": [
+          "#project-name",
+          "#project-model",
+          "#project-hypothesis",
+          "#project-killDate",
+          "#project-status",
+          ".project-card"
+        ],
+        "events": [
+          "click",
+          "input",
+          "change",
+          "touchstart",
+          "touchmove",
+          "touchend",
+          "touchcancel"
+        ],
+        "hasRouter": true,
+        "hasState": true,
+        "hasAnimations": true,
+        "size": 19992
+      },
+      {
+        "path": "js/modules/reviews.js",
+        "exports": [],
+        "selectors": [
+          "#review-wins",
+          "#review-flops",
+          "#review-focus",
+          "#review-score",
+          "#slider-value-display",
+          "#review-week-start",
+          "#reviews-save-indicator",
+          "#review-win-count",
+          "#btn-save-review",
+          ".accordion-header"
+        ],
+        "events": [
+          "input",
+          "beforeunload",
+          "click"
+        ],
+        "hasRouter": false,
+        "hasState": true,
+        "hasAnimations": false,
+        "size": 18285
+      },
+      {
+        "path": "js/modules/roadmap.js",
+        "exports": [],
+        "selectors": [
+          "#roadmap-modal",
+          ".modal-backdrop",
+          ".modal-close",
+          ".roadmap-quarter",
+          "#btn-add-milestone",
+          "#modal-new-milestone",
+          "#modal-milestones",
+          ".btn-remove-milestone",
+          "#btn-save-quarter",
+          "#modal-quarter-key"
+        ],
+        "events": [
+          "click"
+        ],
+        "hasRouter": false,
+        "hasState": true,
+        "hasAnimations": false,
+        "size": 17296
+      },
+      {
+        "path": "js/modules/stageMode.js",
+        "exports": [],
+        "selectors": [
+          ".countdown-container",
+          "#sm-days",
+          "#sm-hours",
+          "#sm-minutes",
+          "#sm-seconds",
+          ".sm-quote-text",
+          ".sm-quote-author",
+          ".sm-win-carousel",
+          ".sm-ticker-track",
+          ".sm-wrapper"
+        ],
+        "events": [],
+        "hasRouter": false,
+        "hasState": false,
+        "hasAnimations": false,
+        "size": 13080
+      },
+      {
+        "path": "js/modules/stats.js",
+        "exports": [],
+        "selectors": [
+          ".view-stats",
+          "[data-stat-target]",
+          ".category-bar-fill"
+        ],
+        "events": [],
+        "hasRouter": false,
+        "hasState": true,
+        "hasAnimations": true,
+        "size": 15052
+      },
+      {
+        "path": "js/modules/warRoom.js",
+        "exports": [],
+        "selectors": [
+          ".warroom-body",
+          ".warroom-tab",
+          ".btn-delete-file",
+          ".btn-preview-file",
+          ".milestone-check",
+          ".btn-delete-milestone",
+          ".btn-add-milestone",
+          ".btn-add-content",
+          ".overview-meta-grid .meta-item:nth-child(2) .meta-sub",
+          ".chart-container"
+        ],
+        "events": [
+          "change",
+          "click",
+          "resize"
+        ],
+        "hasRouter": true,
+        "hasState": true,
+        "hasAnimations": true,
+        "size": 39248
+      },
+      {
+        "path": "js/modules/wins.js",
+        "exports": [],
+        "selectors": [
+          ".filter-btn",
+          "#wins-add-btn",
+          "#wins-add-first",
+          ".win-delete",
+          ".win-card",
+          "#wins-modal-image",
+          "#wins-image-preview",
+          "#wins-modal-close",
+          "#wins-modal-cancel",
+          "#wins-modal-save"
+        ],
+        "events": [
+          "click",
+          "change"
+        ],
+        "hasRouter": true,
+        "hasState": true,
+        "hasAnimations": false,
+        "size": 13426
+      },
+      {
+        "path": "js/system/capture.js",
+        "exports": [],
+        "selectors": [
+          ".capture-backdrop"
+        ],
+        "events": [
+          "input",
+          "keydown",
+          "click"
+        ],
+        "hasRouter": true,
+        "hasState": true,
+        "hasAnimations": true,
+        "size": 18622
+      },
+      {
+        "path": "js/system/importExport.js",
+        "exports": [],
+        "selectors": [
+          ".backup-reminder",
+          ".import-preview-container",
+          "#import-confirm-merge",
+          "#import-confirm-replace",
+          "#import-cancel",
+          ".import-section",
+          "#import-dropzone",
+          "#import-file-input",
+          ".storage-bar-fill",
+          ".storage-text"
+        ],
+        "events": [
+          "keydown"
+        ],
+        "hasRouter": false,
+        "hasState": true,
+        "hasAnimations": true,
+        "size": 21674
+      },
+      {
+        "path": "js/system/mobile.js",
+        "exports": [],
+        "selectors": [
+          ".bottom-sheet-backdrop",
+          ".mobile-nav-item"
+        ],
+        "events": [
+          "install",
+          "activate",
+          "fetch",
+          "touchstart",
+          "touchend",
+          "touchcancel",
+          "scroll",
+          "click",
+          "touchmove",
+          "online",
+          "offline",
+          "resize"
+        ],
+        "hasRouter": true,
+        "hasState": true,
+        "hasAnimations": true,
+        "size": 15938
+      },
+      {
+        "path": "js/system/onboarding.js",
+        "exports": [],
+        "selectors": [
+          "#onboarding-target-date",
+          "#onboarding-project-name",
+          "#onboarding-project-model",
+          "#onboarding-project-hypothesis",
+          "#onboarding-habit-name",
+          "#onboarding-habit-category",
+          "#onboarding-letter-title",
+          "#onboarding-letter-content",
+          ".onboarding-content",
+          ".onboarding-progress"
+        ],
+        "events": [],
+        "hasRouter": false,
+        "hasState": true,
+        "hasAnimations": true,
+        "size": 21637
+      },
+      {
+        "path": "js/system/search.js",
+        "exports": [],
+        "selectors": [
+          ".search-result",
+          ".search-backdrop"
+        ],
+        "events": [
+          "click",
+          "input",
+          "keydown"
+        ],
+        "hasRouter": true,
+        "hasState": true,
+        "hasAnimations": true,
+        "size": 21792
+      },
+      {
+        "path": "js/system/shortcuts.js",
+        "exports": [],
+        "selectors": [
+          ".shortcuts-close",
+          ".shortcuts-backdrop",
+          ".shortcut-row"
+        ],
+        "events": [
+          "click",
+          "keydown"
+        ],
+        "hasRouter": true,
+        "hasState": true,
+        "hasAnimations": true,
+        "size": 14277
+      },
+      {
+        "path": "js/system/sos.js",
+        "exports": [],
+        "selectors": [],
+        "events": [
+          "click",
+          "keydown"
+        ],
+        "hasRouter": true,
+        "hasState": true,
+        "hasAnimations": true,
+        "size": 18422
+      }
+    ]
+  },
+  "visualSystem": {
+    "colorProperties": [
+      {
+        "name": "color-bg",
+        "value": "#0a0a0f",
+        "file": "base.css"
+      },
+      {
+        "name": "color-bg-deep",
+        "value": "#08090f",
+        "file": "base.css"
+      },
+      {
+        "name": "color-surface",
+        "value": "#12121a",
+        "file": "base.css"
+      },
+      {
+        "name": "color-surface-elevated",
+        "value": "#1a1a25",
+        "file": "base.css"
+      },
+      {
+        "name": "color-border",
+        "value": "#2a2a3a",
+        "file": "base.css"
+      },
+      {
+        "name": "color-border-subtle",
+        "value": "#1f1f2e",
+        "file": "base.css"
+      },
+      {
+        "name": "color-text",
+        "value": "#e8e8f0",
+        "file": "base.css"
+      },
+      {
+        "name": "color-text-secondary",
+        "value": "#8a8a9a",
+        "file": "base.css"
+      },
+      {
+        "name": "color-text-muted",
+        "value": "#5a5a6a",
+        "file": "base.css"
+      },
+      {
+        "name": "color-text-inverse",
+        "value": "#0a0a0f",
+        "file": "base.css"
+      },
+      {
+        "name": "color-primary",
+        "value": "#00d4aa",
+        "file": "base.css"
+      },
+      {
+        "name": "color-primary-dark",
+        "value": "#00a884",
+        "file": "base.css"
+      },
+      {
+        "name": "color-primary-glow",
+        "value": "rgba(0, 212, 170, 0.3)",
+        "file": "base.css"
+      },
+      {
+        "name": "color-secondary",
+        "value": "#7c3aed",
+        "file": "base.css"
+      },
+      {
+        "name": "color-secondary-glow",
+        "value": "rgba(124, 58, 237, 0.3)",
+        "file": "base.css"
+      },
+      {
+        "name": "color-danger",
+        "value": "#ef4444",
+        "file": "base.css"
+      },
+      {
+        "name": "color-warning",
+        "value": "#f59e0b",
+        "file": "base.css"
+      },
+      {
+        "name": "color-success",
+        "value": "#22c55e",
+        "file": "base.css"
+      },
+      {
+        "name": "color-info",
+        "value": "#3b82f6",
+        "file": "base.css"
+      }
+    ],
+    "spacingProperties": [
+      {
+        "name": "space-xs",
+        "value": "0.25rem",
+        "file": "base.css"
+      },
+      {
+        "name": "space-sm",
+        "value": "0.5rem",
+        "file": "base.css"
+      },
+      {
+        "name": "space-md",
+        "value": "1rem",
+        "file": "base.css"
+      },
+      {
+        "name": "space-lg",
+        "value": "1.5rem",
+        "file": "base.css"
+      },
+      {
+        "name": "space-xl",
+        "value": "2rem",
+        "file": "base.css"
+      },
+      {
+        "name": "space-2xl",
+        "value": "3rem",
+        "file": "base.css"
+      }
+    ],
+    "borderProperties": [
+      {
+        "name": "radius-sm",
+        "value": "6px",
+        "file": "base.css"
+      },
+      {
+        "name": "radius-md",
+        "value": "10px",
+        "file": "base.css"
+      },
+      {
+        "name": "radius-lg",
+        "value": "16px",
+        "file": "base.css"
+      },
+      {
+        "name": "radius-xl",
+        "value": "24px",
+        "file": "base.css"
+      },
+      {
+        "name": "radius-full",
+        "value": "9999px",
+        "file": "base.css"
+      },
+      {
+        "name": "bottom-sheet-radius",
+        "value": "24px",
+        "file": "mobile.css"
+      }
+    ],
+    "shadowProperties": [
+      {
+        "name": "shadow-sm",
+        "value": "0 1px 2px rgba(0,0,0,0.3)",
+        "file": "base.css"
+      },
+      {
+        "name": "shadow-md",
+        "value": "0 4px 12px rgba(0,0,0,0.4)",
+        "file": "base.css"
+      },
+      {
+        "name": "shadow-lg",
+        "value": "0 8px 24px rgba(0,0,0,0.5)",
+        "file": "base.css"
+      },
+      {
+        "name": "shadow-glow-primary",
+        "value": "0 0 20px var(--color-primary-glow)",
+        "file": "base.css"
+      },
+      {
+        "name": "shadow-glow-secondary",
+        "value": "0 0 20px var(--color-secondary-glow)",
+        "file": "base.css"
+      },
+      {
+        "name": "shadow-glow-amber",
+        "value": "0 0 20px rgba(245, 158, 11, 0.2)",
+        "file": "base.css"
+      }
+    ]
+  }
+}

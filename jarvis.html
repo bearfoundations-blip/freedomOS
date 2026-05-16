@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS // Freedom OS Code Assistant</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* ═══════════════════════════════════════════
+   FREEDOM OS BRAND TOKENS (from views.css)
+   ═══════════════════════════════════════════ */
+:root {
+  /* Core palette - exact matches to Freedom OS */
+  --color-primary: #00d4aa;
+  --color-primary-glow: rgba(0, 212, 170, 0.15);
+  --color-accent: #7c3aed;
+  --color-accent-glow: rgba(124, 58, 237, 0.15);
+
+  /* Backgrounds */
+  --color-bg: #08090f;
+  --color-surface: #0f0f1a;
+  --color-surface-elevated: #1a1a25;
+
+  /* Text */
+  --color-text: #e0e0e0;
+  --color-text-secondary: #8892a0;
+  --color-text-muted: #6b7280;
+  --color-text-inverse: #ffffff;
+
+  /* Borders */
+  --color-border: #1e1e2e;
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+
+  /* Status */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Typography */
+  --font-display: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Inter', system-ui, sans-serif;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* ═══════════════════════════════════════════
+   AMBIENT BACKGROUND (matches views.css)
+   ═══════════════════════════════════════════ */
+.ambient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(0, 212, 170, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(124, 58, 237, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 0% 100%, rgba(0, 212, 170, 0.02) 0%, transparent 40%);
+  animation: ambientDrift 20s ease-in-out infinite;
+  background-size: 200% 200%, 200% 200%, 100% 100%;
+}
+
+@keyframes ambientDrift {
+  0%, 100% { background-position: 0% 50%, 100% 20%, 0% 100%; }
+  50% { background-position: 100% 50%, 0% 20%, 100% 100%; }
+}
+
+/* Holographic grid overlay */
+.holo-grid {
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background-image:
+    linear-gradient(rgba(0, 212, 170, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 170, 0.04) 1px, transparent 1px);
+  background-size: 80px 80px;
+  animation: gridDrift 30s linear infinite;
+  opacity: 0.3;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes gridDrift {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-80px, -80px); }
+}
+
+/* Floating particles */
+.particles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  opacity: 0;
+  animation: particleFloat 10s infinite;
+  box-shadow: 0 0 8px var(--color-primary);
+}
+
+@keyframes particleFloat {
+  0% { opacity: 0; transform: translateY(100vh) scale(0); }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { opacity: 0; transform: translateY(-10vh) scale(1.2); }
+}
+
+/* ═══════════════════════════════════════════
+   GLASS PANELS (Freedom OS style)
+   ═══════════════════════════════════════════ */
+.glass-panel {
+  background: linear-gradient(145deg, var(--color-surface) 0%, rgba(26, 26, 37, 0.8) 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-base);
+}
+
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-primary-glow), transparent);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.glass-panel.active::before,
+.glass-panel:hover::before {
+  opacity: 1;
+}
+
+.glass-panel.active {
+  border-color: rgba(0, 212, 170, 0.2);
+  box-shadow: 0 0 30px rgba(0, 212, 170, 0.06), inset 0 0 30px rgba(0, 212, 170, 0.02);
+}
+
+/* ═══════════════════════════════════════════
+   MAIN LAYOUT
+   ═══════════════════════════════════════════ */
+.app-container {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr 360px;
+  grid-template-rows: 52px 1fr 36px;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  height: 100vh;
+}
+
+/* Header */
+.app-header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-xl);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.brand-icon {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-primary);
+  text-shadow: 0 0 10px var(--color-primary-glow);
+  animation: iconPulse 3s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(0, 212, 170, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(0, 212, 170, 0.4), inset 0 0 10px rgba(0, 212, 170, 0.1); }
+}
+
+.brand-text {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+  animation: statusBlink 2s infinite;
+}
+
+.status-dot.offline {
+  background: var(--color-danger);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+}
+
+@keyframes statusBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.version-badge {
+  padding: 2px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 212, 170, 0.1);
+  border: 1px solid rgba(0, 212, 170, 0.2);
+  color: var(--color-primary);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════
+   FILE TREE PANEL
+   ═══════════════════════════════════════════ */
+.file-tree-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.file-tree {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-sm);
+}
+
+.tree-section {
+  margin-bottom: var(--space-sm);
+}
+
+.tree-section-title {
+  padding: var(--space-sm) var(--space-md);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.tree-section-title::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.file-item {
+  padding: 6px 12px 6px 24px;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  transition: all var(--transition-fast);
+  border-left: 2px solid transparent;
+  position: relative;
+}
+
+.file-item:hover {
+  background: rgba(0, 212, 170, 0.06);
+  border-left-color: var(--color-primary);
+}
+
+.file-item.active {
+  background: rgba(0, 212, 170, 0.1);
+  border-left-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.file-item.ai-selected {
+  animation: aiSelectPulse 2s infinite;
+  border-left-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+@keyframes aiSelectPulse {
+  0%, 100% { background: rgba(124, 58, 237, 0.08); }
+  50% { background: rgba(124, 58, 237, 0.18); }
+}
+
+.file-icon {
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.file-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-meta {
+  font-size: 10px;
+  opacity: 0.5;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Type colors matching Freedom OS */
+.type-core { color: var(--color-primary); }
+.type-feature-module { color: var(--color-accent); }
+.type-system-tool { color: var(--color-warning); }
+.type-stylesheet { color: var(--color-success); }
+.type-template { color: var(--color-info); }
+
+/* ═══════════════════════════════════════════
+   CODE EDITOR PANEL
+   ═══════════════════════════════════════════ */
+.code-panel {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.code-toolbar {
+  padding: var(--space-sm) var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.code-path {
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.code-stats {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.code-container {
+  flex: 1;
+  overflow: auto;
+  padding: var(--space-lg);
+  position: relative;
+}
+
+.code-content {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.7;
+  white-space: pre;
+  tab-size: 2;
+}
+
+.line {
+  display: flex;
+}
+
+.line-number {
+  display: inline-block;
+  width: 44px;
+  text-align: right;
+  padding-right: var(--space-lg);
+  color: var(--color-text-muted);
+  opacity: 0.35;
+  font-size: 11px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.line-content {
+  color: var(--color-text);
+  flex: 1;
+}
+
+/* Syntax highlighting - Freedom OS dark theme */
+.syntax-keyword { color: #ff79c6; }
+.syntax-string { color: #f1fa8c; }
+.syntax-comment { color: #6272a4; font-style: italic; }
+.syntax-function { color: #50fa7b; }
+.syntax-number { color: #bd93f9; }
+.syntax-class { color: #8be9fd; }
+
+/* Ghost placement overlay */
+.ghost-overlay {
+  position: absolute;
+  left: 68px;
+  right: 20px;
+  background: rgba(0, 212, 170, 0.06);
+  border: 1px dashed var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-primary);
+  pointer-events: none;
+  z-index: 10;
+  animation: ghostFloat 2s ease-in-out infinite alternate;
+  box-shadow: 0 0 20px rgba(0, 212, 170, 0.1);
+}
+
+.ghost-overlay::before {
+  content: '▸ INSERT HERE';
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  background: var(--color-bg);
+  padding: 0 var(--space-sm);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+@keyframes ghostFloat {
+  0% { transform: translateY(0); opacity: 0.7; }
+  100% { transform: translateY(-3px); opacity: 1; }
+}
+
+.ghost-code {
+  white-space: pre;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+/* Highlighted range */
+.highlight-range {
+  background: rgba(124, 58, 237, 0.1);
+  border-left: 3px solid var(--color-accent);
+  margin-left: -3px;
+  animation: highlightPulse 2s infinite;
+}
+
+@keyframes highlightPulse {
+  0%, 100% { background: rgba(124, 58, 237, 0.06); }
+  50% { background: rgba(124, 58, 237, 0.14); }
+}
+
+/* Diff visualization */
+.diff-insert {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.12), transparent);
+  border-left: 3px solid var(--color-success);
+  animation: diffSlide 0.4s ease-out;
+}
+
+.diff-remove {
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.12), transparent);
+  border-left: 3px solid var(--color-danger);
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+@keyframes diffSlide {
+  from { transform: translateX(-12px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════
+   CHAT PANEL
+   ═══════════════════════════════════════════ */
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-history {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.chat-bubble {
+  max-width: 95%;
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-lg);
+  font-size: 13px;
+  line-height: 1.6;
+  position: relative;
+  animation: bubbleIn 0.3s ease-out;
+}
+
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.chat-user {
+  align-self: flex-end;
+  background: rgba(0, 212, 170, 0.08);
+  border: 1px solid rgba(0, 212, 170, 0.2);
+  color: var(--color-text);
+  border-bottom-right-radius: var(--radius-sm);
+}
+
+.chat-ai {
+  align-self: flex-start;
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  color: var(--color-text);
+  border-bottom-left-radius: var(--radius-sm);
+}
+
+.chat-ai::before {
+  content: 'JARVIS';
+  display: block;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: var(--space-xs);
+}
+
+.chat-thinking {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  color: var(--color-text-muted);
+  font-style: italic;
+  font-size: 12px;
+}
+
+.typing-dots::after {
+  content: '';
+  animation: typingDots 1.5s infinite;
+}
+
+@keyframes typingDots {
+  0% { content: ''; }
+  33% { content: '.'; }
+  66% { content: '..'; }
+  100% { content: '...'; }
+}
+
+/* Action log */
+.action-log {
+  padding: var(--space-sm) var(--space-lg);
+  border-top: 1px solid var(--color-border);
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.action-item {
+  font-size: 11px;
+  padding: 3px 0;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  animation: actionIn 0.3s ease-out;
+}
+
+@keyframes actionIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.action-icon {
+  font-size: 13px;
+}
+
+/* Chat input */
+.chat-input-area {
+  padding: var(--space-md) var(--space-lg);
+  border-top: 1px solid var(--color-border);
+}
+
+.input-wrapper {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.chat-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-lg);
+  color: var(--color-text);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: all var(--transition-base);
+}
+
+.chat-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
+
+.chat-input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+.send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-primary);
+  background: rgba(0, 212, 170, 0.1);
+  color: var(--color-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.send-btn:hover {
+  background: rgba(0, 212, 170, 0.2);
+  box-shadow: 0 0 15px rgba(0, 212, 170, 0.2);
+  transform: scale(1.05);
+}
+
+.send-btn:active {
+  transform: scale(0.95);
+}
+
+/* ═══════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════ */
+.app-footer {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-lg);
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* ═══════════════════════════════════════════
+   SCROLLBAR
+   ═══════════════════════════════════════════ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0, 212, 170, 0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 212, 170, 0.3); }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+@media (max-width: 1200px) {
+  .app-container {
+    grid-template-columns: 220px 1fr 300px;
+  }
+}
+
+@media (max-width: 900px) {
+  .app-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: 52px 1fr 1fr 36px;
+  }
+  .file-tree-panel, .chat-panel {
+    max-height: 280px;
+  }
+}
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<div class="ambient-bg"></div>
+<div class="holo-grid"></div>
+<div class="particles" id="particles"></div>
+
+<div class="app-container">
+  <!-- Header -->
+  <div class="glass-panel app-header">
+    <div class="brand">
+      <div class="brand-icon">J</div>
+      <div class="brand-text">JARVIS // CODE</div>
+    </div>
+    <div class="status-bar">
+      <div class="status-indicator">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Connecting...</span>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <span id="layoutStatus" style="font-size:10px;color:var(--color-text-muted);opacity:0.6;">Layout: --</span>
+        <span id="kbStatus" style="font-size:10px;color:var(--color-text-muted);opacity:0.6;">KB: --</span>
+      </div>
+      <div class="version-badge" id="modeBadge">LIVE</div>
+    </div>
+  </div>
+
+  <!-- File Tree -->
+  <div class="glass-panel file-tree-panel">
+    <div class="panel-header">
+      <span>📁 Project</span>
+      <span id="fileCount" style="font-size:10px;opacity:0.6;">-- files</span>
+    </div>
+    <div class="file-tree" id="fileTree">
+      <div style="padding:var(--space-xl);text-align:center;color:var(--color-text-secondary);font-size:13px;">
+        Loading manifest...
+      </div>
+    </div>
+  </div>
+
+  <!-- Code Editor -->
+  <div class="glass-panel active code-panel" id="codePanel">
+    <div class="code-toolbar">
+      <div class="code-path" id="currentFilePath">
+        <span style="opacity:0.5;">Select a file from the tree</span>
+      </div>
+      <div class="code-stats" id="codeStats"></div>
+    </div>
+    <div class="code-container" id="codeContainer">
+      <div class="code-content" id="codeDisplay"></div>
+      <div class="ghost-overlay" id="ghostOverlay" style="display:none;">
+        <div class="ghost-code" id="ghostCode"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat -->
+  <div class="glass-panel chat-panel">
+    <div class="panel-header">
+      <span>🤖 JARVIS</span>
+      <span style="font-size:10px;opacity:0.6;">v1.0</span>
+    </div>
+    <div class="chat-history" id="chatHistory"></div>
+    <div class="action-log" id="actionLog"></div>
+    <div class="chat-input-area">
+      <div class="input-wrapper">
+        <input type="text" class="chat-input" id="chatInput" 
+               placeholder="Ask JARVIS to optimize, refactor, or add visuals..."
+               autocomplete="off">
+        <button class="send-btn" id="sendBtn">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="glass-panel app-footer">
+    <div class="footer-brand">
+      <span style="color:var(--color-primary);">●</span>
+      <span>Freedom OS // Modular Vanilla SPA</span>
+    </div>
+    <div>
+      <span id="manifestInfo">No manifest loaded</span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════ */
+let manifest = null;
+let currentFile = null;
+let isProcessing = false;
+
+/* ═══════════════════════════════════════════
+   DOM REFS
+   ═══════════════════════════════════════════ */
+const fileTree = document.getElementById('fileTree');
+const codeDisplay = document.getElementById('codeDisplay');
+const codeContainer = document.getElementById('codeContainer');
+const currentFilePath = document.getElementById('currentFilePath');
+const codeStats = document.getElementById('codeStats');
+const chatHistory = document.getElementById('chatHistory');
+const chatInput = document.getElementById('chatInput');
+const sendBtn = document.getElementById('sendBtn');
+const actionLog = document.getElementById('actionLog');
+const ghostOverlay = document.getElementById('ghostOverlay');
+const ghostCode = document.getElementById('ghostCode');
+const statusDot = document.getElementById('statusDot');
+const statusText = document.getElementById('statusText');
+const modeBadge = document.getElementById('modeBadge');
+const fileCount = document.getElementById('fileCount');
+const manifestInfo = document.getElementById('manifestInfo');
+
+/* ═══════════════════════════════════════════
+   PARTICLES
+   ═══════════════════════════════════════════ */
+function createParticles() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 16; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDelay = Math.random() * 10 + 's';
+    p.style.animationDuration = (8 + Math.random() * 8) + 's';
+    container.appendChild(p);
+  }
+}
+createParticles();
+
+/* ═══════════════════════════════════════════
+   HEALTH CHECK
+   ═══════════════════════════════════════════ */
+async function checkHealth() {
+  try {
+    const res = await fetch('/api/health');
+    const data = await res.json();
+    if (data && data.status === 'ok') {
+      statusDot.classList.remove('offline');
+      statusText.textContent = data.provider === 'mock' ? 'Mock Mode' : 'AI Online';
+      modeBadge.textContent = data.provider === 'mock' ? 'MOCK' : (data.provider || 'live').toUpperCase();
+      modeBadge.style.color = data.provider === 'mock' ? 'var(--color-danger)' : 'var(--color-primary)';
+      modeBadge.style.borderColor = data.provider === 'mock' ? 'var(--color-danger)' : 'var(--color-primary)';
+
+      document.getElementById('layoutStatus').textContent = data.layout ? 'Layout: ✓' : 'Layout: ✗';
+      document.getElementById('layoutStatus').style.color = data.layout ? 'var(--color-success)' : 'var(--color-danger)';
+      document.getElementById('layoutStatus').style.opacity = '1';
+
+      document.getElementById('kbStatus').textContent = data.knowledgebase ? 'KB: ✓' : 'KB: ✗';
+      document.getElementById('kbStatus').style.color = data.knowledgebase ? 'var(--color-success)' : 'var(--color-warning)';
+      document.getElementById('kbStatus').style.opacity = '1';
+    }
+  } catch (e) {
+    statusDot.classList.add('offline');
+    statusText.textContent = 'Server Offline';
+  }
+}
+
+/* ═══════════════════════════════════════════
+   MANIFEST
+   ═══════════════════════════════════════════ */
+async function loadManifest() {
+  try {
+    const res = await fetch('/api/manifest');
+    if (!res.ok) throw new Error('Manifest not found');
+    manifest = await res.json();
+    if (!manifest.files) manifest.files = [];
+    renderFileTree();
+    fileCount.textContent = `${manifest.summary?.totalFiles ?? '--'} files`;
+    manifestInfo.textContent = `${manifest.summary?.coreFiles ?? 0} core · ${manifest.summary?.featureModules ?? 0} modules · ${manifest.summary?.systemTools ?? 0} system`;
+  } catch (e) {
+    fileTree.innerHTML = `
+      <div style="padding:var(--space-xl);text-align:center;color:var(--color-danger);font-size:13px;">
+        ⚠ Manifest not found<br><br>
+        <span style="color:var(--color-text-muted);font-size:11px;">
+          Run <code style="color:var(--color-primary);font-family:var(--font-mono);">node scanner.js</code>
+        </span>
+      </div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   FILE TREE
+   ═══════════════════════════════════════════ */
+function renderFileTree() {
+  fileTree.innerHTML = '';
+  if (!manifest || !manifest.files) return;
+
+  const sections = {
+    'css': { title: 'Stylesheets', files: [] },
+    'js/kernel': { title: 'Kernel', files: [] },
+    'js/modules': { title: 'Modules', files: [] },
+    'js/system': { title: 'System', files: [] },
+    'root': { title: 'Root', files: [] }
+  };
+
+  manifest.files.forEach(file => {
+    if (file.path.startsWith('css/')) sections.css.files.push(file);
+    else if (file.path.startsWith('js/kernel/')) sections['js/kernel'].files.push(file);
+    else if (file.path.startsWith('js/modules/')) sections['js/modules'].files.push(file);
+    else if (file.path.startsWith('js/system/')) sections['js/system'].files.push(file);
+    else sections.root.files.push(file);
+  });
+
+  Object.entries(sections).forEach(([key, section]) => {
+    if (section.files.length === 0) return;
+
+    const sectionEl = document.createElement('div');
+    sectionEl.className = 'tree-section';
+
+    const title = document.createElement('div');
+    title.className = 'tree-section-title';
+    title.textContent = section.title;
+    sectionEl.appendChild(title);
+
+    section.files.forEach(file => {
+      const item = document.createElement('div');
+      item.className = `file-item type-${file.type}`;
+      item.dataset.path = file.path;
+
+      const icons = {
+        'core': '⚙️',
+        'feature-module': '📦',
+        'system-tool': '🔧',
+        'stylesheet': '🎨',
+        'template': '📄',
+        'script': '📜'
+      };
+
+      item.innerHTML = `
+        <span class="file-icon">${icons[file.type] || '📄'}</span>
+        <span class="file-name">${file.path.split('/').pop()}</span>
+        <span class="file-meta">${file.lines}L</span>
+      `;
+
+      item.addEventListener('click', () => loadFile(file.path));
+      sectionEl.appendChild(item);
+    });
+
+    fileTree.appendChild(sectionEl);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   LOAD FILE
+   ═══════════════════════════════════════════ */
+async function loadFile(path) {
+  currentFile = path;
+
+  document.querySelectorAll('.file-item').forEach(el => {
+    el.classList.remove('active', 'ai-selected');
+    if (el.dataset.path === path) el.classList.add('active');
+  });
+
+  currentFilePath.innerHTML = `<span style="color:var(--color-primary);font-weight:600;">${path}</span>`;
+
+  try {
+    const res = await fetch(`/api/file?path=${encodeURIComponent(path)}`);
+    if (!res.ok) throw new Error('Failed to load');
+    const data = await res.json();
+
+    renderCode(data.content, path);
+    codeStats.textContent = `${data.content.split('\n').length} lines · ${(data.content.length/1024).toFixed(1)}KB`;
+    ghostOverlay.style.display = 'none';
+
+  } catch (e) {
+    codeDisplay.innerHTML = `<span style="color:var(--color-danger);">Error: ${e.message}</span>`;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   RENDER CODE
+   ═══════════════════════════════════════════ */
+function renderCode(content, path) {
+  const lines = content.split('\n');
+  const ext = path.split('.').pop();
+
+  let html = '';
+  lines.forEach((line, i) => {
+    const lineNum = i + 1;
+    let highlighted = escapeHtml(line);
+
+    if (ext === 'js' || ext === 'css') {
+      highlighted = basicHighlight(highlighted, ext);
+    }
+
+    html += `<div class="line" data-line="${lineNum}">
+      <span class="line-number">${lineNum}</span>
+      <span class="line-content">${highlighted || ' '}</span>
+    </div>`;
+  });
+
+  codeDisplay.innerHTML = html;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function basicHighlight(code, ext) {
+  if (ext === 'js') {
+    code = code.replace(/\b(const|let|var|function|class|import|export|from|return|if|else|for|while|async|await|new|this|try|catch|typeof|instanceof)\b/g, '<span class="syntax-keyword">$1</span>');
+    code = code.replace(/(['"`])(.*?)(?<!\\)\1/g, '<span class="syntax-string">$1$2$1</span>');
+    code = code.replace(/\b([A-Za-z0-9_$]+)(?=\s*\()/g, '<span class="syntax-function">$1</span>');
+    code = code.replace(/(\/\/.*$)/g, '<span class="syntax-comment">$1</span>');
+    code = code.replace(/\b(\d+)\b/g, '<span class="syntax-number">$1</span>');
+    code = code.replace(/\b(class|extends|static|get|set)\b/g, '<span class="syntax-class">$1</span>');
+  } else if (ext === 'css') {
+    code = code.replace(/([A-Za-z-]+)(?=\s*:)/g, '<span class="syntax-keyword">$1</span>');
+    code = code.replace(/(:\s*)([^;]+)/g, '$1<span class="syntax-string">$2</span>');
+    code = code.replace(/(\/\*.*?\*\/)/g, '<span class="syntax-comment">$1</span>');
+    code = code.replace(/\.([A-Za-z0-9_-]+)/g, '<span class="syntax-function">.$1</span>');
+    code = code.replace(/#([A-Fa-f0-9]{3,8})/g, '<span class="syntax-number">#$1</span>');
+  }
+  return code;
+}
+
+/* ═══════════════════════════════════════════
+   GHOST PLACEMENT
+   ═══════════════════════════════════════════ */
+function showGhostPlacement(line, snippet, description) {
+  const lineEl = codeDisplay.querySelector(`[data-line="${line}"]`);
+  if (!lineEl) return;
+
+  const lineHeight = 21.25;
+  const top = (line - 1) * lineHeight + 16;
+
+  ghostOverlay.style.display = 'block';
+  ghostOverlay.style.top = `${top}px`;
+  ghostCode.textContent = snippet;
+
+  lineEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  setTimeout(() => {
+    ghostOverlay.style.display = 'none';
+  }, 10000);
+}
+
+/* ═══════════════════════════════════════════
+   HIGHLIGHT RANGE
+   ═══════════════════════════════════════════ */
+function highlightRange(startLine, endLine, reason) {
+  for (let i = startLine; i <= endLine; i++) {
+    const lineEl = codeDisplay.querySelector(`[data-line="${i}"]`);
+    if (lineEl) lineEl.classList.add('highlight-range');
+  }
+
+  const startEl = codeDisplay.querySelector(`[data-line="${startLine}"]`);
+  if (startEl) startEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  logAction('🔍', `Lines ${startLine}-${endLine}: ${reason}`);
+}
+
+/* ═══════════════════════════════════════════
+   CHAT
+   ═══════════════════════════════════════════ */
+function addChatBubble(sender, text, isThinking = false) {
+  const bubble = document.createElement('div');
+  bubble.className = `chat-bubble chat-${sender}`;
+
+  if (isThinking) {
+    bubble.innerHTML = `<span class="typing-dots">${text}</span>`;
+  } else {
+    bubble.innerHTML = text.replace(/\n/g, '<br>');
+  }
+
+  chatHistory.appendChild(bubble);
+  chatHistory.scrollTop = chatHistory.scrollHeight;
+  return bubble;
+}
+
+function logAction(icon, text) {
+  const item = document.createElement('div');
+  item.className = 'action-item';
+  item.innerHTML = `<span class="action-icon">${icon}</span><span>${text}</span>`;
+  actionLog.appendChild(item);
+  actionLog.scrollTop = actionLog.scrollHeight;
+}
+
+/* ═══════════════════════════════════════════
+   SEND MESSAGE
+   ═══════════════════════════════════════════ */
+async function sendMessage() {
+  const text = chatInput.value.trim();
+  if (!text || isProcessing) return;
+
+  chatInput.value = '';
+  addChatBubble('user', text);
+  isProcessing = true;
+
+  const thinkingBubble = addChatBubble('ai', 'Analyzing Freedom OS codebase', true);
+
+  try {
+    const res = await fetch('/api/jarvis', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: text,
+        currentFile: currentFile,
+        manifestVersion: manifest?.generated
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Request failed');
+    }
+
+    const data = await res.json();
+    thinkingBubble.remove();
+
+    if (data.message) {
+      addChatBubble('ai', data.message);
+    }
+
+    if (data.actions && data.actions.length > 0) {
+      data.actions.forEach(action => {
+        switch (action.type) {
+          case 'show_file':
+            loadFile(action.path);
+            logAction('📂', `Opened ${action.path}`);
+            document.querySelectorAll('.file-item').forEach(el => {
+              if (el.dataset.path === action.path) el.classList.add('ai-selected');
+            });
+            break;
+
+          case 'suggest_placement':
+            if (currentFile !== action.path) loadFile(action.path);
+            setTimeout(() => {
+              showGhostPlacement(action.line, action.snippet, action.description);
+            }, 300);
+            logAction('✨', `${action.description} → line ${action.line}`);
+            break;
+
+          case 'highlight_range':
+            if (currentFile !== action.path) loadFile(action.path);
+            setTimeout(() => {
+              highlightRange(action.startLine, action.endLine, action.reason);
+            }, 300);
+            break;
+        }
+      });
+    }
+
+    if (data.css_suggestions && data.css_suggestions.length > 0) {
+      data.css_suggestions.forEach(sugg => {
+        logAction('🎨', `CSS: ${sugg.description}`);
+      });
+    }
+
+    if (data.read_requests && data.read_requests.length > 0) {
+      data.read_requests.forEach(req => {
+        logAction('📖', `Read ${req.path}`);
+      });
+    }
+
+  } catch (e) {
+    thinkingBubble.remove();
+    addChatBubble('ai', `⚠ Error: ${e.message}`);
+    console.error(e);
+  } finally {
+    isProcessing = false;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   EVENTS & INIT
+   ═══════════════════════════════════════════ */
+sendBtn.addEventListener('click', sendMessage);
+chatInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+checkHealth();
+loadManifest();
+setInterval(checkHealth, 10000);
+
+setTimeout(() => {
+  if (!manifest) {
+    addChatBubble('ai', 'JARVIS initialized. Run `node scanner.js` to index your Freedom OS codebase, then I can optimize your 35 files with holographic visual guidance.');
+  } else {
+    addChatBubble('ai', `JARVIS online. I see your ${manifest.summary?.totalFiles ?? 0}-file Freedom OS architecture. Ask me to optimize any view, add kinetic effects, or refactor modules. I'll show you exactly where to place code.`);
+  }
+}, 600);
+</script>
+
+</body>
+</html>

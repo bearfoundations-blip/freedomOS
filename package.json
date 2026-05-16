@@ -1,0 +1,19 @@
+{
+  "name": "jarvis-code-assistant",
+  "version": "1.0.0",
+  "description": "Holographic AI coding assistant for vanilla JS SPA",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "scan": "node scanner.js",
+    "dev": "npm run scan && node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "openai": "^4.28.0",
+    "dotenv": "^16.4.0"
+  },
+  "keywords": ["ai", "code-assistant", "vanilla-js", "spa"],
+  "author": "",
+  "license": "MIT"
+}

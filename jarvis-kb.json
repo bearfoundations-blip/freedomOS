@@ -1,0 +1,125 @@
+{
+  "_meta": {
+    "project": "Freedom OS",
+    "version": "1.0",
+    "last_updated": "2026-05-15",
+    "description": "JARVIS knowledgebase. Edit this file to teach JARVIS your preferences, rules, and project context."
+  },
+
+  "preferences": {
+    "animation_style": "Use cubic-bezier(0.34, 1.56, 0.64, 1) for bouncy entrances. Never use linear for UI animations.",
+    "glow_technique": "Radial-gradient circles ONLY for glow effects. Never use box-shadow for glows — that's not the Freedom OS way.",
+    "color_usage": "Primary (#00d4aa) for CTAs, active states, and success. Accent (#7c3aed) for highlights, AI selections, and purple accents only.",
+    "surface_style": "Glassmorphism with backdrop-filter: blur(16px). Semi-transparent backgrounds (rgba). Subtle 1px borders.",
+    "hover_behavior": "Cards lift with translateY(-2px to -4px). Buttons scale to 1.05. Always use transition for smoothness.",
+    "mobile_approach": "Every new component must have a mobile.css counterpart. Check js/system/mobile.js for detection logic before any UI change.",
+    "typography": "Inter for all UI text and display. JetBrains Mono for data, code, numbers, and monospace needs."
+  },
+
+  "patterns": {
+    "card_structure": {
+      "base": "glass-panel class with linear-gradient background",
+      "top_border": "::before pseudo-element with 1px gradient line (transparent → primary-glow → transparent)",
+      "hover": "translateY(-2px), border-color change, box-shadow for depth (not glow)",
+      "example": ".dashboard-section-card, .quick-stat-card, .project-card"
+    },
+    "button_style": {
+      "base": "border-radius: var(--radius-md), subtle 1px border, semi-transparent background",
+      "hover": "background fills with primary color, text inverts to white, scale(1.05)",
+      "active": "scale(0.95) for tactile feedback",
+      "example": ".section-card-action, .daylog-save-btn"
+    },
+    "progress_bar": {
+      "base": "height: 6-12px, border-radius: var(--radius-full), track is surface-elevated",
+      "fill": "Gradient or solid primary, with ::after shimmer animation",
+      "example": ".score-main-fill, .factor-bar-fill, .mini-progress-fill"
+    },
+    "empty_state": {
+      "base": "Centered layout, breathe animation (translateY oscillation), muted icon",
+      "cta": "Always include a button or link to take action",
+      "example": ".empty-state-compact"
+    },
+    "hero_section": {
+      "base": "Radial-gradient ambient glow + gradientShift animation on background",
+      "top_accent": "3px gradient line at top (primary → accent → primary)",
+      "content": "Countdown or score display with text-shadow glow (not box-shadow)",
+      "example": ".dashboard-hero, .daylog-hero"
+    }
+  },
+
+  "rules": {
+    "never": [
+      "Never use !important in CSS",
+      "Never add inline styles via JavaScript (use CSS classes)",
+      "Never use setInterval for animations (use requestAnimationFrame or CSS transitions)",
+      "Never break module boundaries (kernel = core logic, modules = features, system = utilities)",
+      "Never use generic Bootstrap-looking components",
+      "Never add a new color without adding it to base.css custom properties first",
+      "Never use alert() or confirm() — use custom modals",
+      "Never forget to add mobile.css rules for new components"
+    ],
+    "always": [
+      "Always use CSS custom properties for colors, spacing, radius, shadows",
+      "Always check js/system/mobile.js and css/mobile.css for responsive behavior",
+      "Always use the existing keyframe animations (fadeInUp, gradientShift, shimmer, breathe)",
+      "Always add transition properties for interactive elements",
+      "Always use font-variant-numeric: tabular-nums for numbers that change (counts, timers, money)",
+      "Always use text-wrap: balance for headings",
+      "Always export functions/classes from modules (ES6 modules)",
+      "Always handle errors gracefully with try/catch in async functions"
+    ]
+  },
+
+  "project_context": {
+    "mission": "Build a personal operating system that helps a teen entrepreneur retire their mom through content creation and business automation",
+    "sponsor": "Jitter-free energy drink brand — clean energy aesthetic, premium but accessible",
+    "audience": "TikTok-native aspiring teen entrepreneurs who want to make money online",
+    "vibe": "Operator energy. Mission control dashboard. Wealth building. Disciplined but bold.",
+    "key_features": [
+      "Dashboard with countdown timer to financial goal",
+      "Operator score (habit + finance + content performance)",
+      "Day Log (daily learning journal with streaks)",
+      "Creator Studio (content pipeline: ideas → filming → editing → posted)",
+      "War Room (quarterly planning with milestones)",
+      "Finance tracker (P&L per project, runway calculator)",
+      "People CRM (follow-ups, platforms, last contact)",
+      "Wins gallery (social proof, achievements)",
+      "Letters to future self (time-locked messages)",
+      "Stage Mode (focus timer with quotes and wins)",
+      "Reviews (weekly retrospective system)"
+    ]
+  },
+
+  "past_decisions": {
+    "dashboard-hero": {
+      "description": "Uses radial-gradient ambient glow + gradientShift animation on background. 3px top border with animated gradient.",
+      "status": "approved",
+      "date": "2026-05-10",
+      "do_not_change": ["The radial-gradient technique", "The gradientShift animation"]
+    },
+    "operator-score": {
+      "description": "Shimmer animation on progress bars. Score displayed in large mono font with text-shadow glow.",
+      "status": "approved",
+      "date": "2026-05-10",
+      "do_not_change": ["The shimmer animation pattern", "The score font styling"]
+    },
+    "stage-mode": {
+      "description": "Fixed fullscreen, no scroll. Darker background than other views. Large countdown/timer display.",
+      "status": "approved",
+      "date": "2026-05-10",
+      "do_not_change": ["The fixed positioning", "The dark background treatment"]
+    },
+    "quick-stats": {
+      "description": "3-column grid on desktop, 1-column on mobile. Glassmorphism cards with icon wraps that gradient-fill on hover.",
+      "status": "approved",
+      "date": "2026-05-10",
+      "do_not_change": ["The hover gradient-fill on icons", "The 3-column layout structure"]
+    }
+  },
+
+  "learning": {
+    "accepted_suggestions": [],
+    "rejected_suggestions": [],
+    "user_corrections": []
+  }
+}
