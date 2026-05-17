@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
@@ -7,6 +8,16 @@ const http = require('http');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const PROJECT_ROOT = process.cwd();
+
+// CORS: Allow your Netlify frontend to talk to this API
+app.use(cors({
+  origin: ['https://freedomosv5.netlify.app', 'http://localhost:3000', 'http://localhost:5500'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Handle preflight (OPTIONS) requests for all routes
+app.options('*', cors());
 
 // Provider config
 const PROVIDER = process.env.AI_PROVIDER || 'mock';
