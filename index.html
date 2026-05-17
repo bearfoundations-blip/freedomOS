@@ -28,6 +28,7 @@
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect fill='%2300d4aa' width='180' height='180' rx='40'/%3E%3Ctext x='90' y='115' font-family='Arial' font-size='90' font-weight='bold' text-anchor='middle' fill='%230a0a0f'%3EF%3C/text%3E%3C/svg%3E">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
   <div id="app">
@@ -647,6 +648,8 @@
 (function() {
   'use strict';
 
+  const API_BASE = 'https://freedom-os-api.onrender.com';
+
   // DOM refs
   const embed = document.getElementById('jarvis-embed');
   const trigger = document.getElementById('jarvis-trigger');
@@ -669,7 +672,7 @@
   // Check AI health
   async function checkHealth() {
     try {
-      const res = await fetch('/api/health');
+      const res = await fetch(API_BASE + '/api/health');
       const data = await res.json();
       if (data.status === 'ok') {
         statusDot.classList.remove('offline');
@@ -713,7 +716,7 @@
     typing.style.display = 'flex';
 
     try {
-      const res = await fetch('/api/jarvis', {
+      const res = await fetch(API_BASE + '/api/jarvis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -743,7 +746,7 @@
 
     } catch (e) {
       typing.style.display = 'none';
-      addBubble(`⚠ Error: ${e.message}. Make sure server is running.`, 'system');
+      addBubble(`⚠ Error: ${e.message}. Server may be waking up (free tier sleeps after 15min). Try again in 10 seconds.`, 'system');
     } finally {
       isProcessing = false;
     }
@@ -753,7 +756,7 @@
   trigger.addEventListener('click', togglePanel);
   closeBtn.addEventListener('click', togglePanel);
   expandBtn.addEventListener('click', () => {
-    window.open('/jarvis.html', '_blank');
+    window.open(API_BASE + '/jarvis.html', '_blank');
     togglePanel();
   });
 
@@ -773,7 +776,7 @@
   // Welcome message
   setTimeout(() => {
     if (messages.children.length === 0) {
-      addBubble('JARVIS embedded. Press Ctrl+J anytime. Ask me about your Freedom OS codebase, or click ↗ for the full code assistant.', 'ai');
+      addBubble('JARVIS cloud-connected. Press Ctrl+J anytime. Ask me about your Freedom OS codebase, or click ↗ for the full code assistant.', 'ai');
     }
   }, 1000);
 
