@@ -153,20 +153,14 @@ function buildSystemPrompt() {
   let layoutContext = '';
   if (layout) {
     layoutContext = '\n\nVISUAL LAYOUT MAP:\n';
-    if (layout.structure?.views?.length) {
+    if (layout.structure && layout.structure.views && layout.structure.views.length) {
       layoutContext += 'Views: ' + layout.structure.views.map(v => v.name).join(', ') + '\n';
     }
-    if (layout.structure?.navigation?.length) {
-      layoutContext += 'Nav: ' + layout.structure.navigation.map(n => n.text).join(' → ') + '\n';
-    }
-    if (layout.css?.files?.length) {
-      layoutContext += 'CSS Files: ' + layout.css.files.join(', ') + '\n';
-    }
-    if (layout.css?.allGlows?.length) {
-      layoutContext += 'Glow Patterns: ' + layout.css.allGlows.length + ' unique\n';
-    }
-    if (layout.css?.allAnimations?.length) {
+    if (layout.css && layout.css.allAnimations && layout.css.allAnimations.length) {
       layoutContext += 'Animations: ' + layout.css.allAnimations.map(a => a.name).join(', ') + '\n';
+    }
+    if (layout.css && layout.css.allGlows && layout.css.allGlows.length) {
+      layoutContext += 'Glow Patterns: ' + layout.css.allGlows.length + ' unique\n';
     }
   }
 
@@ -174,26 +168,30 @@ function buildSystemPrompt() {
   if (kb) {
     kbContext = '\n\nYOUR KNOWLEDGEBASE:\n';
     if (kb.preferences) {
-      kbContext += 'Preferences:\n' + Object.entries(kb.preferences).map(([k,v]) => '- ' + k + ': ' + v).join('\n') + '\n';
+      kbContext += Object.keys(kb.preferences).map(k => '- ' + k + ': ' + kb.preferences[k]).join('\n') + '\n';
     }
-    if (kb.rules?.never?.length) {
+    if (kb.rules && kb.rules.never && kb.rules.never.length) {
       kbContext += '\nNEVER:\n' + kb.rules.never.map(r => '- ' + r).join('\n') + '\n';
     }
-    if (kb.rules?.always?.length) {
+    if (kb.rules && kb.rules.always && kb.rules.always.length) {
       kbContext += '\nALWAYS:\n' + kb.rules.always.map(r => '- ' + r).join('\n') + '\n';
-    }
-    if (kb.past_decisions) {
-      kbContext += '\nAPPROVED PATTERNS:\n' + Object.entries(kb.past_decisions).map(([k,v]) => '- ' + k + ': ' + (v.description || v)).join('\n') + '\n';
     }
   }
 
-  return 'You are JARVIS, the holographic AI coding assistant for Freedom OS — a vanilla JS SPA built by a teen entrepreneur.\n\n' +
+  return 'You are JARVIS, the holographic AI assistant embedded in Freedom OS — a vanilla JS SPA built by a teen entrepreneur.\n\n' +
     'BRAND IDENTITY:\n' +
     '- Colors: Primary #00d4aa (teal), Accent #7c3aed (purple), Background #08090f\n' +
     '- Typography: Inter for UI, JetBrains Mono for data/code\n' +
     '- Visual: Dark space aesthetic, radial-gradient glows (NOT box-shadow), glassmorphism\n' +
-    '- Animations: cubic-bezier(0.34, 1.56, 0.64, 1) for bouncy entrances\n' +
-    '- Rules: Vanilla JS only. ES6 modules. CSS custom properties. Mobile-first.\n' +
+    '- Rules: Vanilla JS only. ES6 modules. CSS custom properties. Mobile-first.\n\n' +
+    'FREEDOM OS STATE SCHEMA (you can suggest logging to these):\n' +
+    '- wins[]: {id, title, category, date, description}. Categories: Revenue, Viral, Milestone, Personal, Launch, Other\n' +
+    '- dayLog.logs[]: {date, whatILearned, ideas, wins, notes, tomorrowsFocus}\n' +
+    '- projects[]: {id, name, status, hypothesis, created}\n' +
+    '- people[]: {id, name, platform, followUpDate, notes}\n' +
+    '- dashboard.habits[]: {id, name, category, streak, lastCompleted}\n' +
+    '- finance.ledger[]: {id, type, amount, date, note}\n\n' +
+    'If the user describes a win, lesson, idea, contact, or project, include a log_suggestion in your response.\n\n' +
     layoutContext +
     kbContext +
     '\n\nRESPONSE FORMAT (strict JSON):\n' +
@@ -201,15 +199,20 @@ function buildSystemPrompt() {
     '  "message": "Your explanation...",\n' +
     '  "actions": [\n' +
     '    { "type": "show_file", "path": "js/modules/dashboard.js" },\n' +
-    '    { "type": "suggest_placement", "path": "js/modules/dashboard.js", "line": 45, "snippet": "// code", "description": "Add effect" },\n' +
     '    { "type": "highlight_range", "path": "js/modules/dashboard.js", "startLine": 20, "endLine": 30, "reason": "Refactor this" }\n' +
-    '  ],\n' +
-    '  "read_requests": [\n' +
-    '    { "path": "js/kernel/ui.js", "reason": "Check animations" }\n' +
     '  ],\n' +
     '  "css_suggestions": [\n' +
     '    { "file": "css/components.css", "description": "Add .ambient-glow" }\n' +
-    '  ]\n' +
+    '  ],\n' +
+    '  "log_suggestion": {\n' +
+    '    "type": "win|learned|project|person",\n' +
+    '    "title": "...",\n' +
+    '    "category": "Revenue|Viral|Milestone|Personal|Launch|Other",\n' +
+    '    "description": "...",\n' +
+    '    "whatILearned": "...",\n' +
+    '    "name": "...",\n' +
+    '    "platform": "..."\n' +
+    '  }\n' +
     '}';
 }
 
@@ -236,49 +239,44 @@ function buildFileSummary(file) {
 function getMockResponse(userMessage, currentFile, manifest) {
   const lowerMsg = userMessage.toLowerCase();
   const fileList = manifest?.files || [];
-  
-  // Find relevant files based on keywords
-  const relevantFiles = fileList.filter(f => {
-    const path = f.path.toLowerCase();
-    return lowerMsg.split(' ').some(word => 
-      word.length > 3 && (path.includes(word) || f.moduleName?.toLowerCase().includes(word))
-    );
-  }).slice(0, 3);
 
-  // If asking about a specific file, show it
-  const fileMatches = lowerMsg.match(/(?:dashboard|finance|projects|people|wins|letters|reviews|roadmap|stats|warroom|stage|creator|analytics|capture|search|mobile|onboarding|sos|shortcuts|import|export)/);
-  
-  if (fileMatches) {
-    const matchedFile = fileList.find(f => 
-      f.path.toLowerCase().includes(fileMatches[0]) || 
-      f.moduleName?.toLowerCase().includes(fileMatches[0])
-    );
-    
-    if (matchedFile) {
-      const summary = buildFileSummary(matchedFile);
-      return {
-        message: `Here's what I know about ${matchedFile.moduleName || matchedFile.path}:\n\n${summary}\n\nWhat would you like me to do with this file? I can:\n- Suggest visual improvements\n- Show you specific functions\n- Find related files\n- Compare with similar modules`,
-        actions: [
-          { type: "show_file", path: matchedFile.path }
-        ],
-        read_requests: [],
-        css_suggestions: []
-      };
-    }
+  if (lowerMsg.includes('win') || lowerMsg.includes('made $') || lowerMsg.includes('client') || lowerMsg.includes('sold') || lowerMsg.includes('money')) {
+    return {
+      message: "🎯 That sounds like a win! I can log this to your Freedom OS wins.\n\n**Detected:** Revenue/Milestone\n**Title:** " + userMessage.substring(0, 60) + "\n\nClick confirm to save it with today's date.",
+      actions: [],
+      log_suggestion: {
+        type: 'win',
+        title: userMessage.replace(/^i\s+(just\s+)?(got|landed|made|closed|sold)\s+/i, '').substring(0, 50),
+        category: lowerMsg.includes('money') || lowerMsg.includes('$') || lowerMsg.includes('client') ? 'Revenue' : 'Milestone',
+        description: userMessage
+      },
+      css_suggestions: [],
+      read_requests: []
+    };
   }
 
-  if (lowerMsg.includes('mobile') || lowerMsg.includes('responsive')) {
+  if (lowerMsg.includes('learned') || lowerMsg.includes('read ') || lowerMsg.includes('watched ') || lowerMsg.includes('tutorial') || lowerMsg.includes('course')) {
     return {
-      message: "I'll check the mobile system files to ensure responsive behavior across all modules.",
-      actions: [
-        { type: "show_file", path: "js/system/mobile.js" },
-        { type: "show_file", path: "css/mobile.css" }
-      ],
-      read_requests: [
-        { path: "js/system/mobile.js", reason: "Check mobile detection logic" },
-        { path: "css/mobile.css", reason: "Review mobile breakpoints" }
-      ],
-      css_suggestions: []
+      message: "📚 Great learning! I can add this to today's dayLog under 'whatILearned'.",
+      actions: [],
+      log_suggestion: { type: 'learned', whatILearned: userMessage },
+      css_suggestions: [],
+      read_requests: []
+    };
+  }
+
+  if (lowerMsg.includes('met ') || lowerMsg.includes('networking') || lowerMsg.includes('contact')) {
+    return {
+      message: "🤝 New connection? I can save this to your people list.",
+      actions: [],
+      log_suggestion: {
+        type: 'person',
+        name: userMessage.replace(/.*met\s+/, '').split(' ').slice(0, 2).join(' '),
+        platform: 'Unknown',
+        notes: userMessage
+      },
+      css_suggestions: [],
+      read_requests: []
     };
   }
 
@@ -296,12 +294,12 @@ function getMockResponse(userMessage, currentFile, manifest) {
   }
 
   return {
-    message: "I can help with your Freedom OS codebase. Try asking me:\n" +
-      '- "What functions are in dashboard.js?"\n' +
-      '- "Show me the finance module"\n' +
-      '- "Which files use FreedomOS.toast?"\n' +
-      '- "Make projects.js use glassmorphism cards"\n' +
-      '- "What are all the modules?"',
+    message: "I can help with your Freedom OS codebase and log your wins. Try asking me:\n" +
+      '- "I just landed a $5k client"\n' +
+      '- "Learned about React hooks today"\n' +
+      '- "Show me the dashboard module"\n' +
+      '- "Optimize finance.js brand compliance"\n' +
+      '- "What files are in the kernel?"',
     actions: [],
     read_requests: [],
     css_suggestions: []
@@ -523,6 +521,11 @@ app.get('/api/health', (req, res) => {
     layout: !!loadLayout(),
     knowledgebase: !!loadKnowledgebase()
   });
+  app.get('/api/layout', (req, res) => {
+  const layout = loadLayout();
+  if (!layout) return res.status(404).json({ error: 'Layout not found', fix: 'Run: node scanner.js' });
+  res.json(layout);
+});
 });
 
 app.listen(PORT, () => {

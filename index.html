@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="css/views.css">
   <link rel="stylesheet" href="css/charts.css">
   <link rel="stylesheet" href="css/mobile.css">
+  <link rel="stylesheet" href="css/jarvis.css">
 
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect fill='%2300d4aa' width='180' height='180' rx='40'/%3E%3Ctext x='90' y='115' font-family='Arial' font-size='90' font-weight='bold' text-anchor='middle' fill='%230a0a0f'%3EF%3C/text%3E%3C/svg%3E">
 <base target="_blank">
@@ -186,6 +187,8 @@
   <script src="js/modules/roadmap.js"></script>
   <script src="js/modules/stats.js"></script>
   <script src="js/modules/analytics.js"></script>
+  <script src="js/modules/jarvis.js"></script>
+
 
   <script src="js/system/search.js"></script>
   <script src="js/system/shortcuts.js"></script>
@@ -205,55 +208,7 @@
       }
     });
   </script>
-  <!-- ═══════════════════════════════════════════
-   JARVIS EMBEDDED ASSISTANT
-   ═══════════════════════════════════════════ -->
-<div id="jarvis-embed" style="display:none;">
-  <!-- Trigger Button -->
-  <button id="jarvis-trigger" aria-label="Ask JARVIS">
-    <span class="jarvis-trigger-icon">J</span>
-    <span class="jarvis-trigger-ping"></span>
-  </button>
-
-  <!-- Mini Panel -->
-  <div id="jarvis-panel" class="jarvis-panel">
-    <div class="jarvis-panel-header">
-      <div class="jarvis-panel-brand">
-        <span class="jarvis-brand-icon">J</span>
-        <span class="jarvis-brand-text">JARVIS</span>
-      </div>
-      <div class="jarvis-panel-actions">
-        <button id="jarvis-expand" class="jarvis-btn-icon" title="Open full assistant">↗</button>
-        <button id="jarvis-close" class="jarvis-btn-icon" title="Close">✕</button>
-      </div>
-    </div>
-    <div class="jarvis-panel-body">
-      <div id="jarvis-messages" class="jarvis-messages"></div>
-      <div id="jarvis-typing" class="jarvis-typing" style="display:none;">
-        <span class="jarvis-typing-dot"></span>
-        <span class="jarvis-typing-dot"></span>
-        <span class="jarvis-typing-dot"></span>
-      </div>
-    </div>
-    <div class="jarvis-panel-footer">
-      <div class="jarvis-input-wrap">
-        <input type="text" id="jarvis-input" placeholder="Ask JARVIS to optimize, refactor, or add visuals..." autocomplete="off">
-        <button id="jarvis-send" class="jarvis-send-btn" aria-label="Send">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-        </button>
-      </div>
-      <div class="jarvis-status">
-        <span id="jarvis-status-dot" class="jarvis-status-dot"></span>
-        <span id="jarvis-status-text">Ready</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<style>
+ 
 /* ═══════════════════════════════════════════
    JARVIS EMBEDDED — FREEDOM OS THEME
    ═══════════════════════════════════════════ */
