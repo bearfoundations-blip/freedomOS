@@ -20,7 +20,7 @@
 
   var MODULE_NAME = 'jarvis';
   var ROUTE_NAME = 'jarvis';
-  var API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:3000' : 'https://freedom-os-api.onrender.com';
+  var API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:3000' : 'https://freedomos-jarvis.freedomosledger.workers.dev';
 
   // ---- STATE ----
   var _container = null;
