@@ -20,8 +20,10 @@
 
   var MODULE_NAME = 'jarvis';
   var ROUTE_NAME = 'jarvis';
-  var API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:3000' : 'freedomos.bearfoundations.workers.dev';
-
+  var API_BASE = window.location.origin.includes('localhost')
+  ? 'http://localhost:3000'
+  : '';  // empty string = same origin, so /api/jarvis resolves correctly on Vercel
+  
   // ---- STATE ----
   var _container = null;
   var _listeners = [];
