@@ -737,7 +737,7 @@
 
   // ---- GLOBAL SHORTCUT: Ctrl/Cmd + J opens JARVIS from anywhere ----
   document.addEventListener('keydown', function(e) {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'q') {
       e.preventDefault();
       if (FreedomOS.currentRoute === ROUTE_NAME) {
         FreedomOS.navigate('dashboard');
