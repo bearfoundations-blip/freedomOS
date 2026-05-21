@@ -1243,9 +1243,17 @@
     var _explorerPath  = '/';
     var _stepTimers    = [];
 
+    /* ============================================================
+       DEFENSIVE QUERY HELPERS
+       ============================================================ */
     var _q = function (sel) {
       var root = document.getElementById(ROOT_ID);
-      return (root || document).querySelector(sel);
+      var ctx = root || document;
+      var el = ctx.querySelector(sel);
+      if (!el) {
+        console.warn('[JARVIS] _q: element not found for selector:', sel);
+      }
+      return el;
     };
     var _qAll = function (sel) {
       var root = document.getElementById(ROOT_ID);
@@ -1384,7 +1392,7 @@
         s = s.replace(/([\w-]+)(=&quot;)/g, '<span class="jarvis-tok-fn">$1</span>$2');
         s = s.replace(/(&amp;lt;!--[\s\S]*?--&amp;gt;)/g, '<span class="jarvis-tok-comment">$1</span>');
       } else if (ext === 'json') {
-        s = s.replace(/"((?:[^"\\]|\\.)*)"\s*:/g, '"<span class="jarvis-tok-fn">$1</span>":');
+        s = s.replace(/"((?:[^"\\]|\\.)*)"\s*:/g, '"<<span class="jarvis-tok-fn">$1</span>":');
         s = s.replace(/:\s*("(?:[^"\\]|\\.)*")/g, ': <span class="jarvis-tok-string">$1</span>');
         s = s.replace(/\b(true|false|null)\b/g, '<span class="jarvis-tok-keyword">$1</span>');
         s = s.replace(/\b(\d+\.?\d*)\b/g, '<span class="jarvis-tok-number">$1</span>');
@@ -1410,22 +1418,42 @@
     };
 
     /* ============================================================
-       2. renderPanel()
+       2. renderPanel()  — DEFENSIVE FIX
        ============================================================ */
     var renderPanel = function () {
       if (_panelOpen) return;
       _panelOpen = true;
       var orb = document.getElementById(ORB_ID);
       if (orb) orb.classList.add('hidden');
+
+      // Remove existing root if any (prevents duplicates)
+      var existingRoot = document.getElementById(ROOT_ID);
+      if (existingRoot) existingRoot.remove();
+
       var root = document.createElement('div');
       root.id  = ROOT_ID;
       root.innerHTML = _shellHTML();
       document.body.appendChild(root);
-      _q('#' + BACKDROP_ID).addEventListener('click', function (e) {
-        if (e.target.id === BACKDROP_ID) _closePanel();
-      });
-      _q('#jarvis-close-btn').addEventListener('click', _closePanel);
-      _q('#' + SEND_ID).addEventListener('click', _onSend);
+
+      // Defensive: ensure root is in DOM before querying
+      if (!document.getElementById(ROOT_ID)) {
+        console.error('[JARVIS] Failed to append panel to DOM');
+        _panelOpen = false;
+        return;
+      }
+
+      var backdrop = _q('#' + BACKDROP_ID);
+      var closeBtn = _q('#jarvis-close-btn');
+      var sendBtn = _q('#' + SEND_ID);
+
+      if (backdrop) {
+        backdrop.addEventListener('click', function (e) {
+          if (e.target.id === BACKDROP_ID) _closePanel();
+        });
+      }
+      if (closeBtn) closeBtn.addEventListener('click', _closePanel);
+      if (sendBtn) sendBtn.addEventListener('click', _onSend);
+
       _bindInputEvents();
       _bindTabEvents();
       _bindMessageAreaEvents();
@@ -2518,23 +2546,30 @@
   });
 
   /* ============================================================
-     AUTO-BOOT: Mount orb after DOM ready if not already mounted
+     AUTO-BOOT: Mount orb after FreedomOS is ready
      ============================================================ */
+  var _initJarvis = function() {
+    if (!document.getElementById('jarvis-orb')) {
+      _ui.renderOrb();
+    }
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
-      setTimeout(function() {
-        if (!document.getElementById('jarvis-orb')) {
-          _ui.renderOrb();
-        }
-      }, 500);
+      // Wait for FreedomOS to be fully initialized
+      if (typeof FreedomOS !== 'undefined' && FreedomOS.init) {
+        _initJarvis();
+      } else {
+        // Retry after a delay
+        setTimeout(_initJarvis, 1000);
+      }
     });
   } else {
-    setTimeout(function() {
-      if (!document.getElementById('jarvis-orb')) {
-        _ui.renderOrb();
-      }
-    }, 500);
+    if (typeof FreedomOS !== 'undefined' && FreedomOS.init) {
+      _initJarvis();
+    } else {
+      setTimeout(_initJarvis, 1000);
+    }
   }
 
 })();

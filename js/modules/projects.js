@@ -3,7 +3,7 @@
 // File: js/modules/projects.js
 // Depends: kernel/core.js, kernel/ui.js, kernel/utils.js, kernel/events.js, kernel/router.js
 // Provides: projects module (project list, CRUD, filters, search, swipe)
-// Last Updated: 2026-05-10
+// Last Updated: 2026-05-08
 // ============================================================
 
 (function() {
@@ -18,7 +18,7 @@
 
   let _unsubscribers = [];
   let _searchDebounce = null;
-  let _editingProjectId = null;
+  let _editingProjectId = null; // Track edit state outside DOM
 
   function _getProjects() { return FreedomOS.get('projects') || []; }
 
@@ -44,7 +44,7 @@
     var statusColor = STATUS_COLORS[project.status] || 'var(--color-text-muted)';
 
     return (
-      '<div class="project-card glow-card reveal-scale" data-project-id="' + FreedomOS.escapeHtml(project.id) + '" style="border-left: 3px solid ' + statusColor + '">' +
+      '<div class="project-card" data-project-id="' + FreedomOS.escapeHtml(project.id) + '" style="border-left: 3px solid ' + statusColor + '">' +
         '<div class="project-card-header">' +
           '<h3 class="project-card-name">' + FreedomOS.escapeHtml(project.name) + '</h3>' +
           '<div class="project-card-badges">' +
@@ -91,14 +91,14 @@
           '</div>' +
           '<h3 class="empty-state-title">No projects yet</h3>' +
           '<p class="empty-state-desc">Create your first experiment to start tracking.</p>' +
-          '<button class="btn btn-primary btn-add-first magnetic-hover" data-action="new-project">Create Project</button>' +
+          '<button class="btn btn-primary btn-add-first" data-action="new-project">Create Project</button>' +
         '</div>'
       );
     }
 
-    var gridHtml = '<div class="projects-grid stagger-reveal">';
+    var gridHtml = '<div class="projects-grid">';
     projects.forEach(function(p, i) {
-      gridHtml += '<div class="project-card-wrapper">' + _renderProjectCard(p) + '</div>';
+      gridHtml += '<div class="project-card-wrapper" style="animation-delay: ' + (i * 50) + 'ms">' + _renderProjectCard(p) + '</div>';
     });
     gridHtml += '</div>';
     return gridHtml;
@@ -116,7 +116,7 @@
     });
 
     return (
-      '<div class="projects-toolbar reveal-up" data-reveal-delay="80">' +
+      '<div class="projects-toolbar">' +
         '<div class="projects-search" style="flex-grow: 1; width: 50%;">' +
           '<input type="text" class="input input-search" id="project-search" placeholder="Search projects..." autocomplete="off">' +
         '</div>' +
@@ -129,7 +129,7 @@
             '<option value="revenue">Sort by Revenue</option>' +
           '</select>' +
         '</div>' +
-        '<button class="btn btn-primary btn-create magnetic-hover" data-action="new-project">' +
+        '<button class="btn btn-primary btn-create" data-action="new-project">' +
           '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>' +
           'New Project' +
         '</button>' +
@@ -139,7 +139,7 @@
 
   function _buildModalContent(project) {
     var p = project || {};
-    _editingProjectId = p.id || null;
+    _editingProjectId = p.id || null; // Store ID in module closure, NOT in DOM
 
     var modelOptions = '';
     PROJECT_MODELS.forEach(function(m) {
@@ -216,10 +216,10 @@
     var gridContainer = document.getElementById('projects-grid-container');
     if (!gridContainer) return;
     gridContainer.innerHTML = _renderProjectsList(_getFilteredProjects());
-    FreedomOS.animate.initView(gridContainer);
   }
 
   function _saveFromModal() {
+    // Defensive: find inputs inside the modal overlay that ui.js creates
     var modalOverlay = document.getElementById('modal-overlay');
     var container = modalOverlay && !modalOverlay.classList.contains('hidden') ? modalOverlay : document;
 
@@ -426,12 +426,15 @@
     routes: [ROUTE_NAME],
     requires: ['core', 'ui', 'utils', 'events', 'router'],
 
-    init: function() {},
+    initView: function(container, params) {
+      this._container = container;
+      this._params = params;
+    },
 
     render: function(params) {
       return (
         '<div class="view-projects">' +
-          '<div class="view-header reveal-up">' +
+          '<div class="view-header">' +
             '<h1 class="view-title">Projects</h1>' +
             '<p class="view-subtitle">Experiments & Business Models</p>' +
           '</div>' +
@@ -446,7 +449,6 @@
     onMount: function(container) {
       _attachListeners(container);
       _attachSwipeHandlers(container);
-      FreedomOS.animate.initView(container);
 
       var unsub = FreedomOS.on('state:changed', function(data) {
         if (data && data.path && data.path.startsWith('projects')) {
