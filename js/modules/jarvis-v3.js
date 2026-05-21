@@ -1085,7 +1085,7 @@
       }
     };
 
-    var _actions = {
+    var _handlers = {
       log_win:               log_win,
       log_person:            log_person,
       log_learned:           log_learned,
@@ -1098,10 +1098,10 @@
       update_habit:          update_habit,
       add_roadmap_milestone: add_roadmap_milestone,
       write_letter:          write_letter,
-      dispatch: dispatch
+      dispatch: function(type, payload) { return dispatch(type, payload); }
     };
 
-    return _actions;
+    return _handlers;
   }());
 
 

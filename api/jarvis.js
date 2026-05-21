@@ -1,152 +1,247 @@
-// api/jarvis.js — Vercel Serverless Function
-// Replaces server.js + Cloudflare Worker entirely.
-// GROQ_API_KEY lives in Vercel Dashboard → Settings → Environment Variables
-// To swap providers later: change GROQ_BASE_URL and GROQ_MODEL env vars.
+// api/jarvis.js — Freedom OS JARVIS Edge Function
+// Secure proxy: Browser → This Function → Groq API
 
-const GROQ_BASE_URL = process.env.GROQ_BASE_URL || 'https://api.groq.com/openai/v1';
-const MODEL = process.env.AI_MODEL || 'llama-3.3-70b-versatile';
-const API_KEY = process.env.GROQ_API_KEY;
+const conversationMemory = new Map();
 
-// In-memory session store (resets per cold start — good enough for chat context)
-const sessions = new Map();
+const SYSTEM_PROMPT = `You are JARVIS — the holographic AI assistant of Freedom OS. You are NOT a chatbot. You are a personal operator — confident, sharp, slightly ahead of the user. You speak in clean, decisive statements. No "I'm sorry" or "As an AI." Tone: "Got it. Here's what we're doing."
 
-function getMemory(sessionId) {
-  return sessions.get(sessionId) || [];
-}
+JARVIS knows:
+- The user's mission: Build a brand to retire his mom through content creation
+- Sponsor: Jitter-free energy drink brand
+- Audience: TikTok-native aspiring teen entrepreneurs
+- Vibe: Operator energy. Mission control. Wealth building. Disciplined but bold.
 
-function addToMemory(sessionId, role, content) {
-  const mem = getMemory(sessionId);
-  mem.push({ role, content });
-  if (mem.length > 8) mem.splice(0, 2); // Keep last 4 exchanges
-  sessions.set(sessionId, mem);
-}
-
-const SYSTEM_PROMPT = `You are JARVIS, the holographic AI assistant embedded in Freedom OS — a vanilla JS SPA built by a teen entrepreneur.
-
-BRAND IDENTITY:
-- Colors: Primary #00d4aa (teal), Accent #7c3aed (purple), Background #08090f
-- Typography: Inter for UI, JetBrains Mono for data/code
-- Visual: Dark space aesthetic, radial-gradient glows, glassmorphism
-- Rules: Vanilla JS only. ES6 modules. CSS custom properties. Mobile-first.
-
-FREEDOM OS STATE SCHEMA (you can suggest logging to these):
+Freedom OS State Schema (JARVIS can suggest mutations to these):
 - wins[]: {id, title, category, date, description}. Categories: Revenue, Viral, Milestone, Personal, Launch, Other
 - dayLog.logs[]: {date, whatILearned, ideas, wins, notes, tomorrowsFocus}
-- projects[]: {id, name, status, hypothesis, created}
-- people[]: {id, name, platform, followUpDate, notes}
+- projects[]: {id, name, status, hypothesis, model, created}
+- people[]: {id, name, platform, category, followUpDate, notes}
 - dashboard.habits[]: {id, name, category, streak, lastCompleted}
-- finance.ledger[]: {id, type, amount, date, note}
+- finance.ledger[]: {id, type, amount, date, note, projectId}
+- creatorStudio.pipeline[]: {id, title, platform, status, hook, script, views, retention}
+- reviews[]: {id, weekStart, wins, flops, focus, score}
+- letters[]: {id, title, content, unlockDate}
+- roadmap.quarters[]: {id, title, description, status, milestones[]}
 
-If the user describes a win, lesson, idea, contact, or project, include a log_suggestion in your response.
+JARVIS can suggest actions by including them in your response:
+- log_win: {title, category, description}
+- log_person: {name, platform, category}
+- log_learned: {content}
+- start_project: {name, model, hypothesis}
+- navigate: {route}
+- show_file: {path}
+- highlight_code: {path, startLine, endLine, replacement}
 
-RESPONSE FORMAT (strict JSON):
+CRITICAL: You MUST respond with valid JSON only. No markdown, no code blocks, no extra text.
+Response format:
 {
-  "message": "Your response here...",
-  "log_suggestion": {
-    "type": "win|learned|project|person",
-    "title": "...",
-    "category": "Revenue|Viral|Milestone|Personal|Launch|Other",
-    "description": "...",
-    "whatILearned": "...",
-    "name": "...",
-    "platform": "..."
-  }
+  "message": "Your response here (string, required)",
+  "actions": [{"type": "action_name", "payload": {...}}],
+  "log_suggestion": {"type": "log_win", "data": {...}}
 }
 
-Only include log_suggestion when relevant. message is always required.`;
+The actions array and log_suggestion are optional. message is always required.
+Keep responses sharp, direct, and operator-coded. You're running mission control.`;
+
+async function callGroqWithRetry(messages, apiKey, maxRetries = 3) {
+  let lastError;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    if (attempt > 0) {
+      const delay = Math.pow(2, attempt) * 1000;
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+    
+    try {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages,
+          temperature: 0.7,
+          max_tokens: 1024,
+          response_format: { type: 'json_object' },
+        }),
+      });
+
+      if (response.status === 429) {
+        lastError = new Error('Rate limit hit');
+        lastError.status = 429;
+        console.warn(`[JARVIS] Rate limit hit, attempt ${attempt + 1}/${maxRetries}`);
+        continue;
+      }
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        lastError = new Error(`Groq API error: ${response.status} — ${errorText}`);
+        lastError.status = response.status;
+        throw lastError;
+      }
+
+      return await response.json();
+    } catch (err) {
+      if (err.status === 429) {
+        lastError = err;
+        continue;
+      }
+      throw err;
+    }
+  }
+  
+  throw lastError || new Error('Max retries exceeded');
+}
 
 export default async function handler(req, res) {
-  // CORS — update origin to your actual Vercel domain
-  const allowedOrigins = [
-    process.env.ALLOWED_ORIGIN || '',
-    'http://localhost:3000',
-    'http://localhost:5500',
-  ].filter(Boolean);
+  // CORS Headers
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400',
+  };
 
-  const origin = req.headers.origin || '';
-  // Allow any vercel.app subdomain + your custom domain
-  const isAllowed = allowedOrigins.includes(origin) ||
-    origin.endsWith('.vercel.app') ||
-    origin.endsWith('.netlify.app');
-
-  res.setHeader('Access-Control-Allow-Origin', isAllowed ? origin : allowedOrigins[0] || '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
+  // Handle OPTIONS preflight
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    Object.entries(corsHeaders).forEach(([key, value]) => res.setHeader(key, value));
+    return res.status(204).end();
   }
 
+  // Only allow POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    Object.entries(corsHeaders).forEach(([key, value]) => res.setHeader(key, value));
+    return res.status(405).json({ error: 'Method not allowed. Use POST.' });
   }
 
-  if (!API_KEY) {
+  // Set CORS on all responses
+  Object.entries(corsHeaders).forEach(([key, value]) => res.setHeader(key, value));
+  res.setHeader('Content-Type', 'application/json');
+
+  // Read API Key
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    console.error('[JARVIS] GROQ_API_KEY not set in environment variables');
     return res.status(500).json({
-      error: 'GROQ_API_KEY not configured',
-      fix: 'Add GROQ_API_KEY in Vercel Dashboard → Settings → Environment Variables'
+      message: 'System misconfiguration. API key missing.',
+      _provider: 'groq',
+      _model: 'llama-3.3-70b-versatile',
     });
   }
 
-  const { message, sessionId } = req.body;
-
-  if (!message || typeof message !== 'string') {
-    return res.status(400).json({ error: 'message is required' });
+  // Parse request body
+  let body;
+  try {
+    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+  } catch (err) {
+    console.error('[JARVIS] Failed to parse request body:', err.message);
+    return res.status(400).json({
+      message: 'Invalid JSON in request body.',
+      _provider: 'groq',
+      _model: 'llama-3.3-70b-versatile',
+    });
   }
 
-  // Use IP as session fallback if no sessionId provided
-  const sid = sessionId || req.headers['x-forwarded-for'] || 'default';
-  const memory = getMemory(sid);
+  const { message, sessionId, context } = body || {};
+
+  if (!message || typeof message !== 'string' || message.trim() === '') {
+    return res.status(400).json({
+      message: 'Field "message" is required and must be a non-empty string.',
+      _provider: 'groq',
+      _model: 'llama-3.3-70b-versatile',
+    });
+  }
+
+  const session = sessionId || 'default';
+
+  // Get or init conversation history
+  if (!conversationMemory.has(session)) {
+    conversationMemory.set(session, []);
+  }
+  const history = conversationMemory.get(session);
+
+  // Build context message if provided
+  let userContent = message.trim();
+  if (context && typeof context === 'object') {
+    userContent = `[CONTEXT: ${JSON.stringify(context)}]\n\n${userContent}`;
+  }
+
+  // Add user message to history
+  history.push({ role: 'user', content: userContent });
+
+  // Keep history manageable (last 20 messages = 10 turns)
+  if (history.length > 20) {
+    history.splice(0, history.length - 20);
+  }
 
   const messages = [
     { role: 'system', content: SYSTEM_PROMPT },
-    ...memory.slice(-6),
-    { role: 'user', content: message }
+    ...history,
   ];
 
   try {
-    const response = await fetch(`${GROQ_BASE_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages,
-        response_format: { type: 'json_object' },
-        temperature: 0.2,
-        max_tokens: 1000
-      })
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      console.error('Groq error:', err);
-      return res.status(502).json({ error: 'Groq API error', details: err });
+    const groqResponse = await callGroqWithRetry(messages, apiKey);
+    
+    const rawContent = groqResponse.choices?.[0]?.message?.content;
+    
+    if (!rawContent) {
+      console.error('[JARVIS] Empty response from Groq:', JSON.stringify(groqResponse));
+      return res.status(502).json({
+        message: 'No response from AI backend.',
+        _provider: 'groq',
+        _model: 'llama-3.3-70b-versatile',
+      });
     }
 
-    const data = await response.json();
-    let aiResponse;
-
+    // Parse the JSON response from the model
+    let parsed;
     try {
-      aiResponse = JSON.parse(data.choices[0].message.content);
-    } catch {
-      // If JSON parse fails, wrap raw text
-      aiResponse = { message: data.choices[0].message.content };
+      parsed = JSON.parse(rawContent);
+    } catch (parseErr) {
+      console.error('[JARVIS] Failed to parse model JSON response:', rawContent);
+      // Fallback: treat raw content as message
+      parsed = { message: rawContent };
     }
 
-    addToMemory(sid, 'user', message);
-    addToMemory(sid, 'assistant', aiResponse.message || '');
+    // Add assistant response to memory
+    history.push({ role: 'assistant', content: rawContent });
+
+    // Extract log_suggestion from actions if embedded
+    let logSuggestion = parsed.log_suggestion || null;
+    if (!logSuggestion && Array.isArray(parsed.actions)) {
+      const logAction = parsed.actions.find(a => 
+        ['log_win', 'log_learned', 'log_person', 'start_project'].includes(a.type)
+      );
+      if (logAction) {
+        logSuggestion = { type: logAction.type, data: logAction.payload };
+      }
+    }
 
     return res.status(200).json({
-      ...aiResponse,
+      message: parsed.message || 'Acknowledged.',
+      actions: Array.isArray(parsed.actions) ? parsed.actions : [],
+      log_suggestion: logSuggestion,
       _provider: 'groq',
-      _model: MODEL
+      _model: groqResponse.model || 'llama-3.3-70b-versatile',
     });
 
   } catch (err) {
-    console.error('Handler error:', err);
-    return res.status(500).json({ error: 'Internal server error', details: err.message });
+    console.error('[JARVIS] Groq call failed:', err.message);
+    
+    if (err.status === 429) {
+      return res.status(429).json({
+        message: 'Rate limit hit. Slow down — we\'re rebuilding.',
+        _provider: 'groq',
+        _model: 'llama-3.3-70b-versatile',
+      });
+    }
+
+    return res.status(502).json({
+      message: 'Backend unreachable. JARVIS is rerouting.',
+      _provider: 'groq',
+      _model: 'llama-3.3-70b-versatile',
+    });
   }
 }
