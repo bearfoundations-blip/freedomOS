@@ -14,8 +14,6 @@
 
   <link rel="manifest" href="manifest.json">
 
-  <link rel="stylesheet" href="css/jarvis.css">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -29,6 +27,7 @@
   <link rel="stylesheet" href="css/jarvis.css">
 
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect fill='%2300d4aa' width='180' height='180' rx='40'/%3E%3Ctext x='90' y='115' font-family='Arial' font-size='90' font-weight='bold' text-anchor='middle' fill='%230a0a0f'%3EF%3C/text%3E%3C/svg%3E">
+  <base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -80,7 +79,7 @@
           </button>
         </div>
         <div class="sidebar-meta">
-          <span class="version">v2.0.0</span>
+          <span class="version">v2.0.1</span>
           <span class="target-date">Target: Apr 20, 2029</span>
         </div>
       </div>
@@ -192,7 +191,7 @@
   <script src="js/modules/roadmap.js"></script>
   <script src="js/modules/stats.js"></script>
   <script src="js/modules/analytics.js"></script>
-  <script src="js/modules/jarvis-v2.js"></script>
+  <script src="js/modules/jarvis-v3.js"></script>
 
   <!-- ============================================================
        SYSTEM TOOLS (overlays, search, shortcuts, etc.)
@@ -210,11 +209,19 @@
        ============================================================ -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      if (typeof FreedomOS !== 'undefined' && FreedomOS.init) {
+      // Defensive boot with detailed error reporting
+      try {
+        if (typeof FreedomOS === 'undefined') {
+          throw new Error('FreedomOS kernel failed to load. Check that js/kernel/utils.js, events.js, ui.js, core.js are present and loaded in order.');
+        }
+        if (typeof FreedomOS.init !== 'function') {
+          throw new Error('FreedomOS.init is not a function. The kernel may have failed to initialize properly.');
+        }
         FreedomOS.init();
-      } else {
-        console.error('FreedomOS kernel failed to load. Check script loading order.');
-        document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#ef4444;font-family:sans-serif;"><h1>Kernel Error</h1><p>FreedomOS failed to initialize. Ensure all kernel files are loaded in correct order.</p></div>';
+        console.log('[FreedomOS] Boot successful. Version:', FreedomOS.state && FreedomOS.state.version);
+      } catch (err) {
+        console.error('[FreedomOS] BOOT ERROR:', err);
+        document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#ef4444;font-family:sans-serif;"><h1>Kernel Error</h1><p>' + err.message + '</p><p style="color:#888;font-size:12px;margin-top:20px;">Check browser console for details.</p></div>';
       }
     });
   </script>

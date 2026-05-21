@@ -19,6 +19,19 @@
   'use strict';
 
   /* ============================================================
+     DEFENSIVE: Check FreedomOS API availability
+     ============================================================ */
+  if (typeof FreedomOS === 'undefined') {
+    console.error('[JARVIS] FreedomOS kernel not found. Ensure core.js loads before jarvis-v3.js');
+    return;
+  }
+  var requiredAPIs = ['generateId', 'deepClone', 'escapeHtml', 'mutate', 'get', 'emit', 'toast', 'confirm', 'navigate', 'on'];
+  var missingAPIs = requiredAPIs.filter(function(api) { return typeof FreedomOS[api] !== 'function'; });
+  if (missingAPIs.length > 0) {
+    console.warn('[JARVIS] Missing FreedomOS APIs:', missingAPIs.join(', '));
+  }
+
+  /* ============================================================
      PART A — STATE MANAGEMENT (localStorage Persistence)
      ============================================================ */
 
@@ -245,7 +258,11 @@
         if (hasLog) { logStreak++; checkDate = _daysAgo(i + 1); } else break;
       }
       score += Math.min(25, logStreak * 4);
-      var pipeline = Array.isArray(state.creatorStudio && state.creatorStudio.pipeline) ? state.creatorStudio.pipeline : [];
+      var pipeline = Array.isArray(state.creatorStudio && state.creatorStudio.pipeline) 
+        ? state.creatorStudio.pipeline 
+        : Array.isArray(state.creatorStudio && state.creatorStudio.contentPipeline) 
+          ? state.creatorStudio.contentPipeline 
+          : [];
       var activeContent = pipeline.filter(function (p) {
         return p.status !== 'idea' && (p.created || '') >= wkStart;
       }).length;
@@ -299,7 +316,11 @@
         var due = p.followUpDate;
         return due && due > today && due <= _daysAgo(-7);
       });
-      var pipeline = Array.isArray(state.creatorStudio && state.creatorStudio.pipeline) ? state.creatorStudio.pipeline : [];
+      var pipeline = Array.isArray(state.creatorStudio && state.creatorStudio.pipeline) 
+        ? state.creatorStudio.pipeline 
+        : Array.isArray(state.creatorStudio && state.creatorStudio.contentPipeline) 
+          ? state.creatorStudio.contentPipeline 
+          : [];
       var pipelineByStatus = pipeline.reduce(function (acc, p) {
         acc[p.status] = (acc[p.status] || 0) + 1;
         return acc;
@@ -634,6 +655,66 @@
       _apiHistory.splice(0, _apiHistory.length - _MAX_HISTORY);
     }
 
+    // OFFLINE MODE: Generate smart local response when API unreachable
+    var _generateOfflineResponse = function(msg, ctx) {
+      var lower = msg.toLowerCase();
+      var scanner = _scanner.getContextForJarvis();
+      var responses = [];
+
+      if (lower.includes('operator score') || lower.includes('score')) {
+        responses.push('Your operator score is **' + scanner.operatorScore + '/100**. ');
+        if (scanner.operatorScore < 40) responses.push('Time to lock in — focus on habits and daily logs.');
+        else if (scanner.operatorScore < 70) responses.push('Solid momentum. Keep pushing content and follow-ups.');
+        else responses.push('Elite operator mode. You\'re running a tight ship.');
+      }
+      else if (lower.includes('revenue') || lower.includes('money') || lower.includes('profit')) {
+        var fin = _scanner.getFinanceSummary();
+        responses.push('MTD revenue: **' + (FreedomOS.formatMoney ? FreedomOS.formatMoney(fin.mtd.income) : '$' + fin.mtd.income) + '**. ');
+        responses.push('Cash on hand: **' + (FreedomOS.formatMoney ? FreedomOS.formatMoney(fin.cashOnHand) : '$' + fin.cashOnHand) + '**.');
+        if (fin.runway !== null) responses.push('Runway: **' + fin.runway + ' days**.');
+      }
+      else if (lower.includes('project') || lower.includes('active')) {
+        responses.push('You have **' + scanner.projects.active + ' active projects**: ' + scanner.projects.names.join(', ') + '. ');
+        responses.push('Shipped: **' + scanner.wins.total + '** wins total.');
+      }
+      else if (lower.includes('habit') || lower.includes('streak')) {
+        var habits = _scanner.getHabitReport();
+        responses.push('Habits done today: **' + habits.doneToday + '/' + habits.total + '**. ');
+        if (habits.topStreak) responses.push('Top streak: **' + habits.topStreak.name + '** at **' + habits.topStreak.streak + '** days.');
+      }
+      else if (lower.includes('content') || lower.includes('pipeline') || lower.includes('video')) {
+        var content = _scanner.getContentPipeline();
+        responses.push('Content pipeline: **' + content.total + '** pieces. ');
+        responses.push('Live: **' + content.byStatus.live + '** | Ready to post: **' + content.readyToPost + '** | Ideas: **' + content.byStatus.idea + '**.');
+        if (content.stalePieces > 0) responses.push('⚠️ **' + content.stalePieces + '** stale pieces need attention.');
+      }
+      else if (lower.includes('people') || lower.includes('contact') || lower.includes('follow')) {
+        var people = _scanner.getPeopleOverview();
+        responses.push('Contacts: **' + people.total + '**. ');
+        if (people.overdueCount > 0) responses.push('🚨 **' + people.overdueCount + '** overdue follow-ups!');
+        if (people.dueSoonCount > 0) responses.push('⏰ **' + people.dueSoonCount + '** due soon.');
+      }
+      else if (lower.includes('log') || lower.includes('day') || lower.includes('journal')) {
+        var daylog = _scanner.getDayLogSummary();
+        responses.push('Day log streak: **' + daylog.streak + '** days. ');
+        responses.push(daylog.loggedToday ? '✅ Logged today.' : '❌ Not logged yet today.');
+      }
+      else {
+        responses.push('I\'m running in **offline mode** — connect to the internet for full AI features. ');
+        responses.push('Here\'s what I can see: **' + scanner.projects.active + '** active projects, **' + scanner.wins.total + '** wins, operator score **' + scanner.operatorScore + '/100**.');
+        responses.push('Try asking about: operator score, revenue, projects, habits, content pipeline, people, or day logs.');
+      }
+
+      // Add alerts if any
+      if (scanner.alerts && scanner.alerts.length > 0) {
+        responses.push('\n\n**Alerts:**\n' + scanner.alerts.map(function(a) { return '• ' + a; }).join('\n'));
+      }
+
+      return responses.join('');
+    };
+    /* OFFLINE MODE: Check if API is reachable */
+    var _isOffline = false;
+
     var stateSnapshot = {};
     try {
       var s = FreedomOS.state;
@@ -674,9 +755,18 @@
         })
       });
     } catch (networkErr) {
-      console.error('[JARVIS] Network error:', networkErr);
+      console.warn('[JARVIS] Network error — switching to offline mode:', networkErr);
+      _isOffline = true;
       _apiHistory.pop();
-      throw new Error('Network unreachable — check your connection.');
+      // Return offline response instead of throwing
+      var offlineMsg = _generateOfflineResponse(message, context);
+      return {
+        message: offlineMsg,
+        actions: [],
+        log_suggestion: null,
+        _provider: 'offline',
+        _model: 'local-scanner'
+      };
     }
 
     var data;
@@ -883,8 +973,17 @@
       };
       ledger.unshift(entry);
       FreedomOS.mutate('finance.ledger', ledger);
+      // Update cashOnHand for income/expense
+      if (type === 'income') {
+        var currentCash = FreedomOS.get('finance.cashOnHand') || 0;
+        FreedomOS.mutate('finance.cashOnHand', currentCash + amount);
+      } else if (type === 'expense' || type === 'investment') {
+        var currentCash = FreedomOS.get('finance.cashOnHand') || 0;
+        FreedomOS.mutate('finance.cashOnHand', Math.max(0, currentCash - amount));
+      }
       var label = type === 'income' ? '+ ' : '− ';
-      FreedomOS.toast(label + FreedomOS.formatMoney(amount) + ' logged.', 'success');
+      var formatted = FreedomOS.formatMoney ? FreedomOS.formatMoney(amount) : '$' + amount;
+      FreedomOS.toast(label + formatted + ' logged.', 'success');
       FreedomOS.emit('jarvis:finance_logged', entry);
     };
 
@@ -1030,6 +1129,17 @@
       var err2 = _require(data.milestone, ['title']);
       if (err2) { _err('add_roadmap_milestone', err2); return; }
       var quarters = _list('roadmap.quarters');
+      // Initialize default quarter if none exist
+      if (!quarters.length) {
+        var currentQuarter = 'Q' + Math.ceil((new Date().getMonth() + 1) / 3);
+        quarters.push({
+          id: FreedomOS.generateId(),
+          title: currentQuarter + ' ' + new Date().getFullYear(),
+          milestones: [],
+          startDate: new Date().toISOString().split('T')[0]
+        });
+        FreedomOS.mutate('roadmap.quarters', quarters);
+      }
       var quarter = data.quarterId
         ? quarters.find(function (q) { return q.id === data.quarterId; })
         : data.quarterTitle
@@ -2118,7 +2228,8 @@
         return;
       }
       if (btn.classList.contains('apply')) {
-        FreedomOS.confirm('Apply this change to your project?').then(function (ok) {
+        // Defensive confirm — use native if FreedomOS.confirm unavailable
+        var doApply = function(ok) {
           if (!ok) return;
           stepEl.style.borderColor = 'rgba(0,212,170,0.5)';
           stepEl.style.background  = 'rgba(0,212,170,0.04)';
@@ -2127,7 +2238,22 @@
           btn.style.opacity = '0.6';
           FreedomOS.toast('Change applied.', 'success');
           FreedomOS.emit('jarvis:code_applied', { path: path, stepIndex: stepIdx });
-        }).catch(function () {});
+        };
+
+        if (typeof FreedomOS.confirm === 'function' && FreedomOS.confirm.length >= 2) {
+          try {
+            var result = FreedomOS.confirm('Apply this change to your project?');
+            if (result && typeof result.then === 'function') {
+              result.then(doApply).catch(function(){});
+            } else {
+              doApply(result);
+            }
+          } catch(e) {
+            doApply(confirm('Apply this change to your project?'));
+          }
+        } else {
+          doApply(confirm('Apply this change to your project?'));
+        }
       }
     };
 
@@ -2234,7 +2360,7 @@
         '<div class="stat-label">Total Wins</div>' +
         '</div>' +
         '<div class="jarvis-stat-card">' +
-        '<div class="stat-value">' + FreedomOS.formatMoney(_scanner.getSummary().revenue) + '</div>' +
+        '<div class="stat-value">' + (FreedomOS.formatMoney ? FreedomOS.formatMoney(_scanner.getSummary().revenue) : '$' + _scanner.getSummary().revenue) + '</div>' +
         '<div class="stat-label">MTD Revenue</div>' +
         '</div>' +
         '<div class="jarvis-stat-card">' +
@@ -2299,13 +2425,8 @@
         });
       });
 
-      /* Global keyboard shortcut: Cmd/Ctrl+Shift+J toggles JARVIS panel */
-      document.addEventListener('keydown', function(e) {
-        if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'J') {
-          e.preventDefault();
-          _ui.isPanelOpen() ? _ui.closePanel() : _ui.renderPanel();
-        }
-      });
+      /* REMOVED: Conflicting keyboard shortcut — core.js handles Cmd/Ctrl+J now */
+      /* document.addEventListener('keydown', function(e) { ... }); */
 
       /* Listen for action events from the UI */
       FreedomOS.on('jarvis:action', function(action) {

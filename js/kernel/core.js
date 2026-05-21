@@ -1,29 +1,36 @@
 // ============================================================
-// Freedom OS — Core State Management
+// Freedom OS — Core Kernel
 // File: js/kernel/core.js
-// Depends: utils.js, events.js, ui.js
+// Depends: utils.js, events.js, ui.js, router.js, timer.js
 // Provides: state, mutate, get, set, loadState, resetState, init,
 //           registerModule, getModule, modules, viewMap
-// Last Updated: 2026-05-19 (JARVIS Holographic v2.0 added)
+// Version: 2.0.1-unified
 // ============================================================
 //
 // CONNECTION CONTRACT:
-// - This module initializes the FreedomOS application state
 // - All state changes go through FreedomOS.mutate()
-// - State is persisted to localStorage via debounced _persist()
+// - State persisted to localStorage via debounced _persist()
 // - Emits 'state:changed' on every mutation
 //
 // DO NOT MODIFY:
 // - Data schema shapes
-// - API signatures
+// - API signatures  
 // - localStorage key name
 // ============================================================
 
 (function() {
   'use strict';
 
-  if (typeof FreedomOS === 'undefined' || !FreedomOS.emit || !FreedomOS.toast) {
-    throw new Error('FreedomOS.core requires utils.js, events.js, and ui.js to be loaded first.');
+  // ===== DEFENSIVE: Check dependencies with helpful errors =====
+  var requiredDeps = ['emit', 'toast', 'debounce', 'deepClone', 'escapeHtml', 'confirm', 'generateId'];
+  var missing = [];
+  for (var i = 0; i < requiredDeps.length; i++) {
+    if (typeof FreedomOS === 'undefined' || !FreedomOS[requiredDeps[i]]) {
+      missing.push(requiredDeps[i]);
+    }
+  }
+  if (missing.length > 0) {
+    throw new Error('FreedomOS.core requires these from utils.js/ui.js first: ' + missing.join(', '));
   }
 
   /** @private @const {string} */
@@ -34,7 +41,7 @@
    * @private @const {Object}
    */
   var _defaultState = {
-    version: '2.0.0',
+    version: '2.0.1',
 
     profile: {
       name: '',
@@ -63,7 +70,8 @@
     finance: {
       ledger: [],
       monthlyTargets: [],
-      runway: { months: 0, burnRate: 0 }
+      runway: { months: 0, burnRate: 0 },
+      cashOnHand: 0
     },
 
     people: [],
@@ -74,7 +82,9 @@
 
     reviews: [],
 
-    roadmap: [],
+    roadmap: {
+      quarters: []
+    },
 
     stats: {
       totalProjects: 0,
@@ -347,229 +357,197 @@
     return FreedomOS.modules ? FreedomOS.modules[name] : undefined;
   };
 
-  /**
-   * Initializes the FreedomOS kernel and bootstraps modules.
-   */
+  // ============================================================
+  // ===== FULL APPLICATION BOOTSTRAP (single init) =====
+  // ============================================================
+
   FreedomOS.init = function() {
     FreedomOS.DEBUG = false;
     FreedomOS.modules = FreedomOS.modules || {};
     FreedomOS.viewMap = FreedomOS.viewMap || {};
+
+    // Load state first
     FreedomOS.loadState();
 
-    // Initialize router if available
-    if (FreedomOS.router && typeof FreedomOS.router.init === 'function') {
-      FreedomOS.router.init();
+    // ===== 1. BUILD SIDEBAR =====
+    var sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+      var navHtml = '';
+      var viewRoutes = ['jarvis','dashboard','dayLog','projects','warRoom','creatorStudio','stageMode','finance','people','wins','letters','reviews','roadmap','stats','analytics'];
+      var icons = {
+        jarvis: '◆',
+        dashboard: '◈', dayLog: '◉', projects: '◎', warRoom: '⚔', creatorStudio: '✎',
+        stageMode: '▣', finance: '$', people: '♟', wins: '★',
+        letters: '✉', reviews: '⚑', roadmap: '▤', stats: '◉', analytics: '◐'
+      };
+
+      viewRoutes.forEach(function(route) {
+        var mod = FreedomOS.getModule(FreedomOS.viewMap[route]);
+        if (!mod) return;
+        var label = route.replace(/([A-Z])/g, ' $1').replace(/^./, function(c) { return c.toUpperCase(); });
+        navHtml += '<a href="#' + route + '" class="nav-item" data-route="' + route + '" onclick="FreedomOS.navigate(\'' + route + '\'); return false;">' +
+          '<span class="nav-icon">' + (icons[route] || '•') + '</span>' +
+          '<span class="nav-label">' + label + '</span></a>';
+      });
+
+      // Preserve existing sidebar structure if present, otherwise build fresh
+      var existingNav = sidebar.querySelector('.sidebar-nav');
+      if (existingNav) {
+        existingNav.innerHTML = navHtml;
+      } else {
+        sidebar.innerHTML =
+          '<div class="sidebar-header"><div class="sidebar-brand"><div class="brand-icon">◈</div><div class="brand-text">Freedom OS</div></div></div>' +
+          '<nav class="sidebar-nav">' + navHtml + '</nav>' +
+          '<div class="sidebar-footer"><div class="target-date">Target: 2029-05-21</div></div>';
+      }
     }
 
-    // Initialize timer if available
+    // ===== 2. BUILD HEADER =====
+    var header = document.getElementById('header');
+    if (header) {
+      header.innerHTML =
+        '<div class="header-left">' +
+          '<button class="sidebar-toggle" onclick="document.body.classList.toggle(\'sidebar-collapsed\')">☰</button>' +
+          '<span class="header-title" id="page-title">Dashboard</span>' +
+        '</div>' +
+        '<div class="header-right">' +
+          '<button class="header-btn" onclick="FreedomOS.navigate(\'stageMode\')">▣ Stage</button>' +
+          '<div class="timer-widget" id="header-timer">00:00:00</div>' +
+        '</div>';
+    }
+
+    // ===== 3. BOOT ROUTER (defensive) =====
+    if (FreedomOS.router && typeof FreedomOS.router.init === 'function') {
+      FreedomOS.router.init();
+    } else {
+      console.warn('[FreedomOS] Router not available. Navigation may be limited.');
+    }
+
+    // ===== 4. BOOT TIMER (defensive) =====
     if (FreedomOS.timer && typeof FreedomOS.timer.init === 'function') {
       FreedomOS.timer.init();
     }
 
-    // Navigate to default route
+    // ===== 5. NAVIGATE TO DEFAULT =====
     if (typeof FreedomOS.navigate === 'function') {
       var route = FreedomOS.currentRoute || 'dashboard';
-      FreedomOS.navigate(route);
+      if (!window.location.hash) {
+        FreedomOS.navigate(route);
+      } else {
+        FreedomOS.navigate(window.location.hash.replace('#', ''));
+      }
     }
 
+    // ===== 6. VIEW LIFECYCLE =====
+    FreedomOS.on('view:enter', function(data) {
+      var title = document.getElementById('page-title');
+      if (title) title.textContent = data.route.replace(/([A-Z])/g, ' $1').replace(/^./, function(c) { return c.toUpperCase(); });
+
+      // Highlight active nav
+      document.querySelectorAll('.nav-item').forEach(function(el) {
+        el.classList.toggle('active', el.dataset.route === data.route);
+      });
+
+      // Stage Mode: hide chrome
+      if (data.route === 'stageMode') {
+        document.body.classList.add('stage-mode-active');
+        var sb = document.getElementById('sidebar');
+        var hd = document.getElementById('header');
+        if (sb) sb.style.display = 'none';
+        if (hd) hd.style.display = 'none';
+      } else {
+        document.body.classList.remove('stage-mode-active');
+        var sb2 = document.getElementById('sidebar');
+        var hd2 = document.getElementById('header');
+        if (sb2) sb2.style.display = '';
+        if (hd2) hd2.style.display = '';
+      }
+
+      // JARVIS view
+      if (data.route === 'jarvis') {
+        document.body.classList.add('jarvis-view-active');
+      } else {
+        document.body.classList.remove('jarvis-view-active');
+      }
+    });
+
+    FreedomOS.on('view:leave', function(data) {
+      if (data.route === 'stageMode') {
+        document.body.classList.remove('stage-mode-active');
+        var sb = document.getElementById('sidebar');
+        var hd = document.getElementById('header');
+        if (sb) sb.style.display = '';
+        if (hd) hd.style.display = '';
+      }
+      if (data.route === 'jarvis') {
+        document.body.classList.remove('jarvis-view-active');
+        var sb2 = document.getElementById('sidebar');
+        var hd2 = document.getElementById('header');
+        if (sb2) sb2.style.display = '';
+        if (hd2) hd2.style.display = '';
+      }
+    });
+
+    // ===== 7. HEADER TIMER =====
+    function _formatTime(seconds) {
+      var h = Math.floor(seconds / 3600);
+      var m = Math.floor((seconds % 3600) / 60);
+      var s = seconds % 60;
+      return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+
+    function _updateHeaderTimer() {
+      var el = document.getElementById('header-timer');
+      if (!el) return;
+
+      // Priority 1: Active project timer
+      if (FreedomOS.timer && FreedomOS.timer.isRunning && FreedomOS.timer.isRunning()) {
+        el.textContent = _formatTime(FreedomOS.timer.getElapsed ? FreedomOS.timer.getElapsed() : 0);
+        el.classList.add('timer-active');
+        return;
+      }
+
+      // Priority 2: Countdown to target date
+      el.classList.remove('timer-active');
+      var targetStr = FreedomOS.get('profile.targetDate') || '2029-05-21';
+      var target = new Date(targetStr + 'T00:00:00').getTime();
+      var diff = target - Date.now();
+
+      if (diff <= 0) {
+        el.textContent = 'TARGET REACHED';
+        return;
+      }
+
+      var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      el.textContent = 
+        String(days).padStart(3, '0') + ':' +
+        String(hours).padStart(2, '0') + ':' +
+        String(minutes).padStart(2, '0') + ':' +
+        String(seconds).padStart(2, '0');
+    }
+
+    setInterval(_updateHeaderTimer, 1000);
+    _updateHeaderTimer();
+    FreedomOS.on('timer:tick', _updateHeaderTimer);
+
+    // ===== 8. JARVIS GLOBAL SHORTCUT =====
+    document.addEventListener('keydown', function(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
+        e.preventDefault();
+        if (FreedomOS.currentRoute === 'jarvis') {
+          FreedomOS.navigate('dashboard');
+        } else {
+          FreedomOS.navigate('jarvis');
+        }
+      }
+    });
+
+    // ===== 9. APP READY =====
     FreedomOS.emit('app:ready');
   };
 
 })();
-
-// ============================================================
-// FreedomOS.init() — FULL APPLICATION BOOTSTRAP
-// Includes: sidebar builder, header builder, router boot,
-//           timer fix, view lifecycle, JARVIS integration
-// Last Updated: 2026-05-19
-// ============================================================
-
-FreedomOS.init = function() {
-  FreedomOS.DEBUG = false;
-  FreedomOS.modules = FreedomOS.modules || {};
-  FreedomOS.viewMap = FreedomOS.viewMap || {};
-  FreedomOS.loadState();
-
-  // ============================================================
-  // 1. BUILD SIDEBAR — All views including JARVIS
-  // ============================================================
-  var sidebar = document.getElementById('sidebar');
-  if (sidebar) {
-    var navHtml = '';
-    // JARVIS added to beginning — holographic AI partner
-    var viewRoutes = ['jarvis','dashboard','dayLog','projects','warRoom','creatorStudio','stageMode','finance','people','wins','letters','reviews','roadmap','stats','analytics'];
-    var icons = {
-      jarvis: '◆',
-      dashboard: '◈', dayLog: '◉', projects: '◎', warRoom: '⚔', creatorStudio: '✎',
-      stageMode: '▣', finance: '$', people: '♟', wins: '★',
-      letters: '✉', reviews: '⚑', roadmap: '▤', stats: '◉', analytics: '◐'
-    };
-
-    viewRoutes.forEach(function(route) {
-      var mod = FreedomOS.getModule(FreedomOS.viewMap[route]);
-      if (!mod) return; // Skip if module not registered
-      var label = route.replace(/([A-Z])/g, ' $1').replace(/^./, function(c) { return c.toUpperCase(); });
-      navHtml += '<a href="#' + route + '" class="nav-item" data-route="' + route + '" onclick="FreedomOS.navigate(\'' + route + '\'); return false;">' +
-        '<span class="nav-icon">' + (icons[route] || '•') + '</span>' +
-        '<span class="nav-label">' + label + '</span></a>';
-    });
-
-    sidebar.innerHTML =
-      '<div class="sidebar-brand"><div class="brand-icon">◈</div><div class="brand-text">Freedom OS</div></div>' +
-      '<nav class="sidebar-nav">' + navHtml + '</nav>' +
-      '<div class="sidebar-footer"><div class="target-date">Target: 2029-05-21</div></div>';
-  }
-
-  // ============================================================
-  // 2. BUILD HEADER
-  // ============================================================
-  var header = document.getElementById('header');
-  if (header) {
-    header.innerHTML =
-      '<div class="header-left">' +
-        '<button class="sidebar-toggle" onclick="document.body.classList.toggle(\'sidebar-collapsed\')">☰</button>' +
-        '<span class="header-title" id="page-title">Dashboard</span>' +
-      '</div>' +
-      '<div class="header-right">' +
-        '<button class="header-btn" onclick="FreedomOS.navigate(\'stageMode\')">▣ Stage</button>' +
-        '<div class="timer-widget" id="header-timer">00:00:00</div>' +
-      '</div>';
-  }
-
-  // ============================================================
-  // 3. BOOT ROUTER
-  // ============================================================
-  var defaultRoute = 'dashboard';
-  if (!window.location.hash) {
-    FreedomOS.navigate(defaultRoute);
-  } else {
-    FreedomOS.navigate(window.location.hash.replace('#', ''));
-  }
-
-  // ============================================================
-  // 4. VIEW LIFECYCLE — Enter / Leave handlers
-  // ============================================================
-  FreedomOS.on('view:enter', function(data) {
-    var title = document.getElementById('page-title');
-    if (title) title.textContent = data.route.replace(/([A-Z])/g, ' $1').replace(/^./, function(c) { return c.toUpperCase(); });
-
-    // Highlight active nav
-    document.querySelectorAll('.nav-item').forEach(function(el) {
-      el.classList.toggle('active', el.dataset.route === data.route);
-    });
-
-    // Stage Mode: hide chrome, go fullscreen
-    if (data.route === 'stageMode') {
-      document.body.classList.add('stage-mode-active');
-      document.getElementById('sidebar').style.display = 'none';
-      document.getElementById('header').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-    } else {
-      document.body.classList.remove('stage-mode-active');
-      document.getElementById('sidebar').style.display = '';
-      document.getElementById('header').style.display = '';
-      document.getElementById('app').style.display = '';
-    }
-
-    // JARVIS: hide chrome in cinematic mode (handled by jarvis.js)
-    if (data.route === 'jarvis') {
-      document.body.classList.add('jarvis-view-active');
-    } else {
-      document.body.classList.remove('jarvis-view-active');
-    }
-  });
-
-  FreedomOS.on('view:leave', function(data) {
-    if (data.route === 'stageMode') {
-      document.body.classList.remove('stage-mode-active');
-      document.getElementById('sidebar').style.display = '';
-      document.getElementById('header').style.display = '';
-      document.getElementById('app').style.display = '';
-    }
-    if (data.route === 'jarvis') {
-      document.body.classList.remove('jarvis-view-active');
-      // Restore chrome if cinematic mode was active
-      document.getElementById('sidebar').style.display = '';
-      document.getElementById('header').style.display = '';
-    }
-  });
-
-  // ============================================================
-  // 5. TIMER FIX — Restore + Header Display
-  // ============================================================
-
-  // Restore timer from previous session
-  if (FreedomOS.timer && typeof FreedomOS.timer.init === 'function') {
-    FreedomOS.timer.init();
-  }
-
-  // Header timer: counts down to target date by default.
-  // If a project timer is started, it switches to elapsed time.
-  function _formatTime(seconds) {
-    var h = Math.floor(seconds / 3600);
-    var m = Math.floor((seconds % 3600) / 60);
-    var s = seconds % 60;
-    return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-  }
-
-  function _updateHeaderTimer() {
-    var el = document.getElementById('header-timer');
-    if (!el) return;
-
-    // Priority 1: Show active project timer elapsed time
-    if (FreedomOS.timer && FreedomOS.timer.isRunning && FreedomOS.timer.isRunning()) {
-      el.textContent = _formatTime(FreedomOS.timer.getElapsed());
-      el.classList.add('timer-active');
-      return;
-    }
-
-    // Priority 2: Countdown to target date (never gets stuck at 0)
-    el.classList.remove('timer-active');
-    var targetStr = FreedomOS.get('profile.targetDate') || '2029-05-21';
-    var target = new Date(targetStr + 'T00:00:00').getTime();
-    var diff = target - Date.now();
-
-    if (diff <= 0) {
-      el.textContent = 'TARGET REACHED';
-      return;
-    }
-
-    var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    var seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-    // Compact format: DDD:HH:MM:SS
-    el.textContent = 
-      String(days).padStart(3, '0') + ':' +
-      String(hours).padStart(2, '0') + ':' +
-      String(minutes).padStart(2, '0') + ':' +
-      String(seconds).padStart(2, '0');
-  }
-
-  // Update immediately and every second
-  setInterval(_updateHeaderTimer, 1000);
-  _updateHeaderTimer();
-
-  // Smooth update when project timer starts/stops via timer:tick events
-  FreedomOS.on('timer:tick', _updateHeaderTimer);
-
-  // ============================================================
-  // 6. JARVIS GLOBAL SHORTCUT — Ctrl/Cmd + J from anywhere
-  // ============================================================
-  document.addEventListener('keydown', function(e) {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
-      e.preventDefault();
-      if (FreedomOS.currentRoute === 'jarvis') {
-        FreedomOS.navigate('dashboard');
-      } else {
-        FreedomOS.navigate('jarvis');
-      }
-    }
-  });
-
-  // ============================================================
-  // 7. APP READY
-  // ============================================================
-  FreedomOS.emit('app:ready');
-};
