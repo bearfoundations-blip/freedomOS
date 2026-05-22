@@ -712,8 +712,6 @@
 
       return responses.join('');
     };
-    /* OFFLINE MODE: Check if API is reachable */
-    var _isOffline = false;
 
     var stateSnapshot = {};
     try {
@@ -756,9 +754,7 @@
       });
     } catch (networkErr) {
       console.warn('[JARVIS] Network error — switching to offline mode:', networkErr);
-      _isOffline = true;
       _apiHistory.pop();
-      // Return offline response instead of throwing
       var offlineMsg = _generateOfflineResponse(message, context);
       return {
         message: offlineMsg,
@@ -808,12 +804,11 @@
       message:        aiContent,
       actions:        Array.isArray(data.actions)  ? data.actions  : [],
       log_suggestion: data.log_suggestion           || null,
+      codeSteps:      data.codeSteps               || null,
       _provider:      data._provider               || null,
       _model:         data._model                  || null
     };
-  };
-
-  /* ============================================================
+  };  /* ============================================================
      PART D — ACTION ENGINE (Direct State Manipulation)
      ============================================================ */
 
@@ -1404,6 +1399,12 @@
        1. renderOrb()
        ============================================================ */
     var renderOrb = function () {
+      // Buddy is the sole trigger — remove any legacy orb
+      var orb = document.getElementById(ORB_ID);
+      if (orb) { orb.remove(); }
+      // If buddy exists, do not create a new orb
+      if (document.getElementById('jarvis-buddy-avatar')) return;
+      // Fallback: only create orb if no buddy and no orb already
       if (document.getElementById(ORB_ID)) return;
       var btn = document.createElement('button');
       btn.id            = ORB_ID;
@@ -1423,8 +1424,6 @@
     var renderPanel = function () {
       if (_panelOpen) return;
       _panelOpen = true;
-      var orb = document.getElementById(ORB_ID);
-      if (orb) orb.classList.add('hidden');
 
       // Remove existing root if any (prevents duplicates)
       var existingRoot = document.getElementById(ROOT_ID);
@@ -1444,7 +1443,6 @@
 
       var backdrop = _q('#' + BACKDROP_ID);
       var closeBtn = _q('#jarvis-close-btn');
-      var sendBtn = _q('#' + SEND_ID);
 
       if (backdrop) {
         backdrop.addEventListener('click', function (e) {
@@ -1452,13 +1450,14 @@
         });
       }
       if (closeBtn) closeBtn.addEventListener('click', _closePanel);
-      if (sendBtn) sendBtn.addEventListener('click', _onSend);
 
-      _bindInputEvents();
       _bindTabEvents();
       _bindMessageAreaEvents();
       document.addEventListener('keydown', _onKeyDown);
+
+      // Switch to chat tab first — creates input/send elements, then binds them
       _switchTab('chat', true);
+
       FreedomOS.emit('jarvis:opened', {});
     };
 
@@ -2495,44 +2494,6 @@
         }, 300);
       });
 
-      /* Expose public API on FreedomOS namespace */
-      FreedomOS.JARVIS = {
-        open:    function() { _ui.renderPanel(); },
-        close:   function() { _ui.closePanel(); },
-        send:    function(msg) {
-          if (!_ui.isPanelOpen()) _ui.renderPanel();
-          setTimeout(function() {
-            var input = document.getElementById('jarvis-input');
-            if (input) {
-              input.value = msg;
-              input.dispatchEvent(new Event('input'));
-              /* Trigger send via the UI's internal handler */
-              var sendBtn = document.getElementById('jarvis-send-btn');
-              if (sendBtn) sendBtn.click();
-            }
-          }, 400);
-        },
-        cinematic: {
-          enter: function() { if (!_ui.isCinematic()) _ui.toggleCinematic(); },
-          exit:  function() { if (_ui.isCinematic()) _ui.toggleCinematic(); }
-        },
-        getState:  function() { return FreedomOS.deepClone(_jarvisState); },
-        newChat:   function() {
-          _newConversation();
-          if (_ui.isPanelOpen() && _ui.isPanelOpen()) _ui.switchTab('chat');
-        },
-        clearHistory: function() {
-          _jarvisState.conversations = [];
-          _jarvisState.currentConversationId = null;
-          _saveState();
-          if (_ui.isPanelOpen()) _ui.switchTab('chat');
-          FreedomOS.toast('Chat history cleared.', 'info');
-        },
-        ui: _ui,
-        scanner: _scanner,
-        actions: _actions
-      };
-
       FreedomOS.emit('jarvis:ready', { version: 'v3', module: 'jarvis' });
     },
 
@@ -2546,9 +2507,50 @@
   });
 
   /* ============================================================
+     EXPOSE JARVIS API IMMEDIATELY (not just in onMount)
+     ============================================================ */
+  FreedomOS.JARVIS = {
+    open:    function() { _ui.renderPanel(); },
+    close:   function() { _ui.closePanel(); },
+    send:    function(msg) {
+      if (!_ui.isPanelOpen()) _ui.renderPanel();
+      setTimeout(function() {
+        var input = document.getElementById('jarvis-input');
+        if (input) {
+          input.value = msg;
+          input.dispatchEvent(new Event('input'));
+          var sendBtn = document.getElementById('jarvis-send-btn');
+          if (sendBtn) sendBtn.click();
+        }
+      }, 400);
+    },
+    cinematic: {
+      enter: function() { if (!_ui.isCinematic()) _ui.toggleCinematic(); },
+      exit:  function() { if (_ui.isCinematic()) _ui.toggleCinematic(); }
+    },
+    getState:  function() { return FreedomOS.deepClone(_jarvisState); },
+    newChat:   function() {
+      _newConversation();
+      if (_ui.isPanelOpen()) _ui.switchTab('chat');
+    },
+    clearHistory: function() {
+      _jarvisState.conversations = [];
+      _jarvisState.currentConversationId = null;
+      _saveState();
+      if (_ui.isPanelOpen()) _ui.switchTab('chat');
+      FreedomOS.toast('Chat history cleared.', 'info');
+    },
+    ui: _ui,
+    scanner: _scanner,
+    actions: _actions
+  };
+
+  /* ============================================================
      AUTO-BOOT: Mount orb after FreedomOS is ready
      ============================================================ */
   var _initJarvis = function() {
+    if (document.getElementById('jarvis-orb')) return;
+    if (document.getElementById('jarvis-buddy-avatar')) return; // Buddy is the button
     if (!document.getElementById('jarvis-orb')) {
       _ui.renderOrb();
     }

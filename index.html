@@ -29,6 +29,7 @@
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect fill='%2300d4aa' width='180' height='180' rx='40'/%3E%3Ctext x='90' y='115' font-family='Arial' font-size='90' font-weight='bold' text-anchor='middle' fill='%230a0a0f'%3EF%3C/text%3E%3C/svg%3E">
   <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
   <div id="app">
@@ -205,11 +206,574 @@
   <script src="js/system/mobile.js"></script>
 
   <!-- ============================================================
+       BUDDY CONTROLLER (runs before FreedomOS.init)
+       ============================================================ -->
+  <script>
+    (function() {
+      'use strict';
+
+      function initBuddy() {
+        var root = document.getElementById('jarvis-buddy-root');
+        if (!root) {
+          root = document.createElement('div');
+          root.id = 'jarvis-buddy-root';
+          document.body.appendChild(root);
+        }
+
+        // Create particle trail container
+        var trailContainer = document.createElement('div');
+        trailContainer.id = 'jarvis-buddy-trail';
+        root.appendChild(trailContainer);
+
+        var avatar = document.createElement('div');
+        avatar.className = 'jarvis-buddy-avatar';
+        avatar.id = 'jarvis-buddy-avatar';
+        avatar.setAttribute('aria-label', 'Open JARVIS Assistant');
+        avatar.setAttribute('role', 'button');
+
+        // Thruster glow element
+        var thruster = document.createElement('div');
+        thruster.className = 'jarvis-buddy-thruster-glow';
+        avatar.appendChild(thruster);
+
+        // Sleek AI Assistant Drone SVG
+        avatar.innerHTML += [
+          '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">',
+            '<defs>',
+              '<radialGradient id="bodyGrad" cx="50%" cy="40%" r="65%">',
+                '<stop offset="0%" stop-color="#ffffff"/>',
+                '<stop offset="45%" stop-color="#eaeaf2"/>',
+                '<stop offset="100%" stop-color="#b8b8cc"/>',
+              '</radialGradient>',
+              '<linearGradient id="visorGrad" x1="0" y1="0" x2="1" y2="0">',
+                '<stop offset="0%" stop-color="#00ffd4"/>',
+                '<stop offset="50%" stop-color="#00d4aa"/>',
+                '<stop offset="100%" stop-color="#00a080"/>',
+              '</linearGradient>',
+              '<filter id="glow" x="-50%" y="-50%" width="200%" height="200%">',
+                '<feGaussianBlur stdDeviation="2.5" result="blur"/>',
+                '<feMerge>',
+                  '<feMergeNode in="blur"/>',
+                  '<feMergeNode in="blur"/>',
+                  '<feMergeNode in="SourceGraphic"/>',
+                '</feMerge>',
+              '</filter>',
+              '<filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">',
+                '<feGaussianBlur stdDeviation="1.5" result="blur"/>',
+                '<feMerge>',
+                  '<feMergeNode in="blur"/>',
+                  '<feMergeNode in="SourceGraphic"/>',
+                '</feMerge>',
+              '</filter>',
+            '</defs>',
+            // Main body — sleek egg with metallic sheen
+            '<ellipse cx="32" cy="34" rx="24" ry="27" fill="url(#bodyGrad)" stroke="rgba(0,212,170,0.35)" stroke-width="1" filter="url(#softGlow)"/>',
+            // Top sensor ring
+            '<ellipse cx="32" cy="14" rx="16" ry="5" fill="none" stroke="rgba(0,212,170,0.5)" stroke-width="1.2" filter="url(#softGlow)"/>',
+            // Visor housing — dark band
+            '<path d="M16 24 Q32 20 48 24 Q50 29 48 33 Q32 37 16 33 Q14 29 16 24Z" fill="#141428" stroke="rgba(0,212,170,0.3)" stroke-width="0.6"/>',
+            // Left eye
+            '<ellipse class="eva-eye-left" cx="25" cy="28.5" rx="5.5" ry="3.5" fill="url(#visorGrad)" filter="url(#glow)"/>',
+            // Right eye
+            '<ellipse class="eva-eye-right" cx="39" cy="28.5" rx="5.5" ry="3.5" fill="url(#visorGrad)" filter="url(#glow)"/>',
+            // Eye highlights
+            '<ellipse cx="23.5" cy="27" rx="1.8" ry="1.1" fill="rgba(255,255,255,0.85)"/>',
+            '<ellipse cx="37.5" cy="27" rx="1.8" ry="1.1" fill="rgba(255,255,255,0.85)"/>',
+            // Side intake fins
+            '<path d="M9 26 L5 24 L5 38 L9 36Z" fill="rgba(0,212,170,0.12)" stroke="rgba(0,212,170,0.3)" stroke-width="0.5"/>',
+            '<path d="M55 26 L59 24 L59 38 L55 36Z" fill="rgba(0,212,170,0.12)" stroke="rgba(0,212,170,0.3)" stroke-width="0.5"/>',
+            // Bottom thruster ring
+            '<ellipse cx="32" cy="54" rx="14" ry="4.5" fill="none" stroke="rgba(0,212,170,0.4)" stroke-width="1" filter="url(#softGlow)"/>',
+            '<ellipse cx="32" cy="54" rx="8" ry="2.5" fill="rgba(0,212,170,0.35)" filter="url(#glow)"/>',
+            // Antenna
+            '<line x1="32" y1="7" x2="32" y2="2" stroke="rgba(0,212,170,0.6)" stroke-width="1.2" filter="url(#softGlow)"/>',
+            '<circle cx="32" cy="1.5" r="2.2" fill="rgba(0,212,170,0.95)" filter="url(#glow)">',
+              '<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>',
+            '</circle>',
+            // Body highlight (metallic reflection)
+            '<ellipse cx="26" cy="16" rx="10" ry="6" fill="rgba(255,255,255,0.22)"/>',
+            // Scanline (subtle HUD sweep)
+            '<rect class="scanline" x="12" y="8" width="40" height="2" rx="1" fill="rgba(0,212,170,0.25)" filter="url(#softGlow)"/>',
+          '</svg>'
+        ].join('');
+
+        // Re-append thruster after SVG injection
+        avatar.appendChild(thruster);
+        root.appendChild(avatar);
+
+        // Remove legacy JARVIS orb — buddy is the sole trigger
+        var legacyOrb = document.getElementById('jarvis-orb');
+        if (legacyOrb) legacyOrb.remove();
+
+        // Set initial position
+        avatar.style.left = (window.innerWidth - 72 - 24) + 'px';
+        avatar.style.bottom = '24px';
+        avatar.style.right = 'auto';
+        avatar.style.top = 'auto';
+
+        var isDragging = false;
+        var hasDragged = false;
+        var totalMove = 0;
+        var dragStartX = 0;
+        var dragStartY = 0;
+        var dragElLeft = 0;
+        var dragElBottom = 0;
+        var dragEndTime = 0;
+        var lastX = 0;
+        var lastY = 0;
+        var velocityX = 0;
+        var velocityY = 0;
+
+        var patrol = {
+          isPatrolling: true,
+          speed: 0.5,
+          direction: 1,
+          isPaused: false,
+          pauseEndTime: 0,
+          lastPauseCheck: 0,
+          reqId: null,
+          wallHitTime: 0
+        };
+
+        // Particle trail system
+        var particles = [];
+        var particleId = 0;
+        var maxParticles = 30;
+
+        function spawnParticle(x, y, vx, vy, origin) {
+          if (particles.length >= maxParticles) {
+            var old = particles.shift();
+            if (old.el && old.el.parentNode) old.el.remove();
+          }
+          var el = document.createElement('div');
+          el.className = 'jarvis-buddy-particle';
+
+          // Determine spawn offset based on origin edge
+          var offsetX = 32, offsetY = 32;
+          if (origin === 'left')   { offsetX = 6;  offsetY = 32 + (Math.random() - 0.5) * 20; }
+          if (origin === 'right')  { offsetX = 58; offsetY = 32 + (Math.random() - 0.5) * 20; }
+          if (origin === 'top')    { offsetX = 32 + (Math.random() - 0.5) * 20; offsetY = 6; }
+          if (origin === 'bottom') { offsetX = 32 + (Math.random() - 0.5) * 20; offsetY = 58; }
+
+          el.style.left = (x + offsetX) + 'px';
+          el.style.bottom = (y + offsetY) + 'px';
+          var size = 2.5 + Math.random() * 4.5;
+          el.style.width = size + 'px';
+          el.style.height = size + 'px';
+          el.style.opacity = '0.9';
+          trailContainer.appendChild(el);
+
+          // Velocity bias based on origin (propulsion direction)
+          var biasVx = (vx || 0) * 0.4;
+          var biasVy = (vy || 0) * 0.4;
+          if (origin === 'left')   biasVx = -Math.abs(biasVx || 1.5) - Math.random() * 1;
+          if (origin === 'right')  biasVx =  Math.abs(biasVx || 1.5) + Math.random() * 1;
+          if (origin === 'top')    biasVy =  Math.abs(biasVy || 1.5) + Math.random() * 1;
+          if (origin === 'bottom') biasVy = -Math.abs(biasVy || 1.5) - Math.random() * 1;
+
+          particles.push({
+            id: ++particleId,
+            el: el,
+            x: x + offsetX,
+            y: y + offsetY,
+            vx: biasVx + (Math.random() - 0.5) * 1.2,
+            vy: biasVy + (Math.random() - 0.5) * 1.2,
+            life: 1.0,
+            decay: 0.015 + Math.random() * 0.025
+          });
+        }
+
+        function updateParticles() {
+          for (var i = particles.length - 1; i >= 0; i--) {
+            var p = particles[i];
+            p.life -= p.decay;
+            if (p.life <= 0) {
+              if (p.el && p.el.parentNode) p.el.remove();
+              particles.splice(i, 1);
+              continue;
+            }
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.02; // slight gravity
+            p.el.style.left = p.x + 'px';
+            p.el.style.bottom = p.y + 'px';
+            p.el.style.opacity = p.life * 0.9;
+            p.el.style.transform = 'scale(' + (0.4 + p.life * 0.6) + ')';
+          }
+          if (particles.length > 0 || isDragging || patrol.isPatrolling) {
+            requestAnimationFrame(updateParticles);
+          }
+        }
+
+        function startParticleLoop() {
+          if (particles.length === 0 && !isDragging && !patrol.isPatrolling) {
+            requestAnimationFrame(updateParticles);
+          }
+        }
+
+        function getNumericStyle(el, prop) {
+          var val = window.getComputedStyle(el)[prop];
+          return parseFloat(val) || 0;
+        }
+
+        // Thruster direction logic
+        function setThrustDir(dir) {
+          if (!dir) {
+            avatar.removeAttribute('data-thrust-dir');
+            return;
+          }
+          var current = avatar.getAttribute('data-thrust-dir');
+          if (current !== dir) avatar.setAttribute('data-thrust-dir', dir);
+        }
+
+        function getThrustOriginFromDir(dir) {
+          // Propulsion emits from opposite side of movement
+          if (dir === 'left')  return 'left';   // moving right, thrust left
+          if (dir === 'right') return 'right';  // moving left, thrust right
+          if (dir === 'up')    return 'bottom'; // moving up, thrust bottom
+          if (dir === 'down')  return 'top';    // moving down, thrust top
+          return 'bottom';
+        }
+
+        function startPatrol() {
+          if (patrol.reqId || isDragging) return;
+          patrol.isPatrolling = true;
+          patrol.lastPauseCheck = Date.now();
+          patrol.reqId = requestAnimationFrame(patrolLoop);
+          startParticleLoop();
+        }
+
+        function stopPatrol() {
+          if (patrol.reqId) {
+            cancelAnimationFrame(patrol.reqId);
+            patrol.reqId = null;
+          }
+        }
+
+        function patrolLoop() {
+          if (!patrol.isPatrolling || isDragging) {
+            patrol.reqId = null;
+            return;
+          }
+
+          var now = Date.now();
+
+          // Wall hit reaction cooldown
+          if (now - patrol.wallHitTime < 800) {
+            patrol.reqId = requestAnimationFrame(patrolLoop);
+            return;
+          }
+
+          // Wait 3s after drag before resuming patrol
+          if (now - dragEndTime < 3000) {
+            patrol.reqId = requestAnimationFrame(patrolLoop);
+            return;
+          }
+
+          var left = getNumericStyle(avatar, 'left');
+          var bottom = getNumericStyle(avatar, 'bottom');
+          var vw = window.innerWidth;
+          var minX = 20;
+          var maxX = vw - 76;
+
+          // Handle pause state
+          if (patrol.isPaused) {
+            if (now >= patrol.pauseEndTime) {
+              patrol.isPaused = false;
+              patrol.speed = 0.3 + Math.random() * 0.5;
+              patrol.direction = Math.random() > 0.5 ? 1 : -1;
+              avatar.classList.remove('wall-hit-left', 'wall-hit-right');
+              setThrustDir(null);
+            } else {
+              patrol.reqId = requestAnimationFrame(patrolLoop);
+              return;
+            }
+          }
+
+          // Random pause check: 20% chance per second
+          if (now - patrol.lastPauseCheck >= 1000) {
+            patrol.lastPauseCheck = now;
+            if (Math.random() < 0.20) {
+              patrol.isPaused = true;
+              patrol.pauseEndTime = now + (2000 + Math.random() * 3000);
+              setThrustDir(null);
+              patrol.reqId = requestAnimationFrame(patrolLoop);
+              return;
+            }
+          }
+
+          var prevLeft = left;
+
+          // Move
+          left += patrol.speed * patrol.direction;
+
+          // Set thrust direction based on patrol movement
+          if (patrol.direction > 0) setThrustDir('left');
+          else setThrustDir('right');
+
+          // Spawn trail particles from thruster while moving
+          if (Math.random() < 0.45) {
+            var origin = patrol.direction > 0 ? 'left' : 'right';
+            spawnParticle(left, bottom, -patrol.direction * patrol.speed * 0.5, 0, origin);
+          }
+
+          // Floating hover effect — subtle sine wave on bottom
+          var hoverOffset = Math.sin(now / 800) * 2;
+
+          // Edge bounce with 20px padding and 50% pause chance + wall hit animation
+          if (left <= minX) {
+            left = minX;
+            patrol.wallHitTime = now;
+            avatar.classList.add('wall-hit-left');
+            setTimeout(function() { avatar.classList.remove('wall-hit-left'); }, 600);
+            patrol.speed = 0.3 + Math.random() * 0.5;
+            if (Math.random() < 0.5) {
+              patrol.isPaused = true;
+              patrol.pauseEndTime = now + (2000 + Math.random() * 3000);
+              patrol.direction = 1;
+            } else {
+              patrol.direction = 1;
+            }
+            // Burst particles on wall hit
+            for (var i = 0; i < 8; i++) {
+              spawnParticle(left, bottom + hoverOffset, 2 + Math.random() * 3, (Math.random() - 0.5) * 4, 'left');
+            }
+          } else if (left >= maxX) {
+            left = maxX;
+            patrol.wallHitTime = now;
+            avatar.classList.add('wall-hit-right');
+            setTimeout(function() { avatar.classList.remove('wall-hit-right'); }, 600);
+            patrol.speed = 0.3 + Math.random() * 0.5;
+            if (Math.random() < 0.5) {
+              patrol.isPaused = true;
+              patrol.pauseEndTime = now + (2000 + Math.random() * 3000);
+              patrol.direction = -1;
+            } else {
+              patrol.direction = -1;
+            }
+            // Burst particles on wall hit
+            for (var i = 0; i < 8; i++) {
+              spawnParticle(left + 64, bottom + hoverOffset, -2 - Math.random() * 3, (Math.random() - 0.5) * 4, 'right');
+            }
+          }
+
+          if (!patrol.isPaused) {
+            avatar.style.left = left + 'px';
+            avatar.style.bottom = (24 + hoverOffset) + 'px';
+            avatar.style.right = 'auto';
+            avatar.style.top = 'auto';
+            // Subtle tilt based on direction
+            var tilt = patrol.direction * 4;
+            avatar.style.transform = 'rotate(' + tilt + 'deg)';
+          }
+
+          patrol.reqId = requestAnimationFrame(patrolLoop);
+        }
+
+        function onPointerDown(e) {
+          if (e.type === 'mousedown' && e.button !== 0) return;
+          isDragging = true;
+          hasDragged = false;
+          totalMove = 0;
+          var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          dragStartX = clientX;
+          dragStartY = clientY;
+          dragElLeft = getNumericStyle(avatar, 'left');
+          dragElBottom = getNumericStyle(avatar, 'bottom');
+          lastX = clientX;
+          lastY = clientY;
+          velocityX = 0;
+          velocityY = 0;
+          avatar.classList.add('dragging');
+          setThrustDir(null);
+          stopPatrol();
+          startParticleLoop();
+          if (e.cancelable) e.preventDefault();
+        }
+
+        function onPointerMove(e) {
+          if (!isDragging) return;
+          var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          var dx = clientX - dragStartX;
+          var dy = clientY - dragStartY;
+          totalMove = Math.abs(dx) + Math.abs(dy);
+          if (totalMove > 5) {
+            hasDragged = true;
+          }
+
+          // Calculate velocity for tilt and thrust
+          velocityX = clientX - lastX;
+          velocityY = clientY - lastY;
+          lastX = clientX;
+          lastY = clientY;
+
+          var newLeft = dragElLeft + dx;
+          var newBottom = dragElBottom - dy;
+          newLeft = Math.max(0, Math.min(window.innerWidth - 72, newLeft));
+          newBottom = Math.max(0, Math.min(window.innerHeight - 72, newBottom));
+
+          // Determine thrust direction from velocity
+          var absVx = Math.abs(velocityX);
+          var absVy = Math.abs(velocityY);
+          if (absVx > 1 || absVy > 1) {
+            if (absVx > absVy) {
+              setThrustDir(velocityX > 0 ? 'left' : 'right');
+            } else {
+              setThrustDir(velocityY > 0 ? 'bottom' : 'top');
+            }
+          }
+
+          // Apply tilt based on drag velocity
+          var tiltX = Math.max(-18, Math.min(18, velocityX * 1.8));
+          var tiltY = Math.max(-12, Math.min(12, -velocityY * 1.0));
+
+          avatar.style.left = newLeft + 'px';
+          avatar.style.bottom = newBottom + 'px';
+          avatar.style.right = 'auto';
+          avatar.style.top = 'auto';
+          avatar.style.transform = 'rotate(' + tiltX + 'deg) rotateX(' + tiltY + 'deg)';
+
+          // Spawn trail particles from thruster while dragging
+          if (Math.random() < 0.65) {
+            var thrustDir = avatar.getAttribute('data-thrust-dir') || 'bottom';
+            var origin = getThrustOriginFromDir(thrustDir);
+            spawnParticle(newLeft, newBottom, -velocityX * 0.4, velocityY * 0.4, origin);
+          }
+
+          if (e.cancelable) e.preventDefault();
+        }
+
+        function onPointerUp(e) {
+          if (!isDragging) return;
+          isDragging = false;
+          avatar.classList.remove('dragging');
+          setThrustDir(null);
+          dragEndTime = Date.now();
+
+          // Spring back to upright
+          avatar.style.transform = '';
+
+          if (!hasDragged || totalMove < 5) {
+            // CLICK — open JARVIS
+            console.log('buddy clicked');
+
+            // Clean up any legacy orb
+            var orb = document.getElementById('jarvis-orb');
+            if (orb) orb.remove();
+
+            // Open JARVIS via FreedomOS API
+            var opened = false;
+            try {
+              if (window.FreedomOS && FreedomOS.JARVIS && typeof FreedomOS.JARVIS.open === 'function') {
+                FreedomOS.JARVIS.open();
+                opened = true;
+                console.log('[Buddy] JARVIS panel opened');
+              }
+            } catch (err) {
+              console.warn('[Buddy] JARVIS open failed:', err);
+            }
+
+            // Fallback 1: navigate to jarvis route
+            if (!opened && window.FreedomOS && typeof FreedomOS.navigate === 'function') {
+              console.warn('[Buddy] JARVIS API missing, falling back to route navigation');
+              FreedomOS.navigate('jarvis');
+              opened = true;
+            }
+
+            // Fallback 2: if FreedomOS itself is missing, something is very wrong
+            if (!opened) {
+              console.error('[Buddy] FreedomOS not available — JARVIS cannot open');
+            }
+
+            // Click flash effect
+            avatar.classList.add('clicked');
+            setTimeout(function() { avatar.classList.remove('clicked'); }, 400);
+
+            // Burst particles on click (radial explosion)
+            var left = getNumericStyle(avatar, 'left');
+            var bottom = getNumericStyle(avatar, 'bottom');
+            for (var i = 0; i < 14; i++) {
+              var angle = (Math.PI * 2 * i) / 14;
+              spawnParticle(left + 32, bottom + 32, Math.cos(angle) * 5, Math.sin(angle) * 5, 'bottom');
+            }
+          }
+
+          // Resume patrol after 3s cooldown
+          patrol.reqId = requestAnimationFrame(function cooldown() {
+            if (Date.now() - dragEndTime >= 3000) {
+              startPatrol();
+            } else {
+              patrol.reqId = requestAnimationFrame(cooldown);
+            }
+          });
+        }
+
+        avatar.addEventListener('mousedown', onPointerDown);
+        avatar.addEventListener('touchstart', onPointerDown, { passive: false });
+        document.addEventListener('mousemove', onPointerMove);
+        document.addEventListener('touchmove', onPointerMove, { passive: false });
+        document.addEventListener('mouseup', onPointerUp);
+        document.addEventListener('touchend', onPointerUp);
+
+        window.addEventListener('resize', function() {
+          var left = getNumericStyle(avatar, 'left');
+          var bottom = getNumericStyle(avatar, 'bottom');
+          left = Math.max(0, Math.min(window.innerWidth - 72, left));
+          bottom = Math.max(0, Math.min(window.innerHeight - 72, bottom));
+          avatar.style.left = left + 'px';
+          avatar.style.bottom = bottom + 'px';
+        });
+
+        window.addEventListener('orientationchange', function() {
+          dragEndTime = Date.now();
+          stopPatrol();
+          patrol.isPaused = false;
+          patrol.pauseEndTime = 0;
+          patrol.lastPauseCheck = Date.now();
+          setTimeout(function() {
+            var left = getNumericStyle(avatar, 'left');
+            left = Math.max(20, Math.min(window.innerWidth - 92, left));
+            avatar.style.left = left + 'px';
+            avatar.style.bottom = '24px';
+            avatar.style.right = 'auto';
+            avatar.style.top = 'auto';
+            avatar.style.transform = '';
+            setThrustDir(null);
+            patrol.speed = 0.3 + Math.random() * 0.5;
+            patrol.direction = Math.random() > 0.5 ? 1 : -1;
+            startPatrol();
+          }, 300);
+        });
+
+        // Start patrol on init
+        patrol.speed = 0.3 + Math.random() * 0.5;
+        patrol.direction = Math.random() > 0.5 ? 1 : -1;
+        startPatrol();
+        startParticleLoop();
+      }
+
+      // Track JARVIS readiness
+      window._jarvisReady = false;
+      document.addEventListener('jarvis:ready', function() {
+        window._jarvisReady = true;
+        console.log('[Buddy] JARVIS is ready');
+      });
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initBuddy);
+      } else {
+        initBuddy();
+      }
+    })();
+  </script>
+
+  <!-- ============================================================
        BOOT
        ============================================================ -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Defensive boot with detailed error reporting
       try {
         if (typeof FreedomOS === 'undefined') {
           throw new Error('FreedomOS kernel failed to load. Check that js/kernel/utils.js, events.js, ui.js, core.js are present and loaded in order.');
@@ -225,5 +789,7 @@
       }
     });
   </script>
+
+  <div id="jarvis-buddy-root"></div>
 </body>
 </html>

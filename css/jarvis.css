@@ -1170,3 +1170,436 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   BUDDY AVATAR — Miniature AI Assistant Drone
+   Freedom OS v3
+   ============================================================ */
+
+#jarvis-buddy-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+#jarvis-buddy-root > * {
+  pointer-events: auto;
+}
+
+/* Particle trail container */
+#jarvis-buddy-trail {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* Individual trail particles */
+.jarvis-buddy-particle {
+  position: fixed;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 212, 170, 0.95) 0%, rgba(0, 212, 170, 0.5) 40%, transparent 75%);
+  box-shadow: 0 0 10px rgba(0, 212, 170, 0.7), 0 0 20px rgba(0, 212, 170, 0.3);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* Main avatar — sleek assistant body */
+.jarvis-buddy-avatar {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 72px;
+  height: 72px;
+  border-radius: 50% 50% 48% 48% / 58% 58% 42% 42%;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 212, 170, 0.2);
+  cursor: pointer;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  transition: transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 250ms ease,
+              border-color 300ms ease;
+  will-change: transform;
+  /* Idle floating animation */
+  animation: eva-float 3s ease-in-out infinite;
+  /* Base ambient glow */
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.35),
+    inset 0 0 24px rgba(0, 212, 170, 0.06),
+    0 0 0 1px rgba(0, 212, 170, 0.15);
+}
+
+/* Hover state — intensified field and lift */
+.jarvis-buddy-avatar:hover {
+  transform: scale(1.12) translateY(-4px);
+  box-shadow:
+    0 0 40px rgba(0, 212, 170, 0.35),
+    0 0 80px rgba(0, 212, 170, 0.12),
+    inset 0 0 30px rgba(0, 212, 170, 0.1),
+    0 0 0 1px rgba(0, 212, 170, 0.4);
+  border-color: rgba(0, 212, 170, 0.55);
+  animation: eva-float-hover 2s ease-in-out infinite;
+}
+
+/* Active/pressed state */
+.jarvis-buddy-avatar:active {
+  transform: scale(0.95);
+}
+
+/* Click flash effect */
+.jarvis-buddy-avatar.clicked {
+  animation: eva-click-flash 400ms ease-out;
+}
+
+/* Dragging state — no transition for instant response, tilted */
+.jarvis-buddy-avatar.dragging {
+  transition: none;
+  cursor: grabbing;
+  animation: none;
+  box-shadow:
+    0 0 50px rgba(0, 212, 170, 0.45),
+    0 0 100px rgba(0, 212, 170, 0.2),
+    inset 0 0 30px rgba(0, 212, 170, 0.15),
+    0 0 0 1px rgba(0, 212, 170, 0.5);
+}
+
+/* Wall hit animations */
+.jarvis-buddy-avatar.wall-hit-left {
+  animation: eva-wall-hit-left 600ms ease-out;
+}
+
+.jarvis-buddy-avatar.wall-hit-right {
+  animation: eva-wall-hit-right 600ms ease-out;
+}
+
+/* Thruster glow element — propulsion light */
+.jarvis-buddy-thruster-glow {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  border-radius: inherit;
+  overflow: visible;
+}
+
+.jarvis-buddy-thruster-glow::before {
+  content: '';
+  position: absolute;
+  width: 50%;
+  height: 8px;
+  left: 25%;
+  bottom: -6px;
+  background: radial-gradient(ellipse, rgba(0, 212, 170, 0.9) 0%, rgba(0, 212, 170, 0.4) 50%, transparent 80%);
+  filter: blur(6px);
+  opacity: 0.5;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+}
+
+/* Directional propulsion states */
+.jarvis-buddy-avatar[data-thrust-dir="left"] .jarvis-buddy-thruster-glow::before {
+  left: -6px;
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 50%;
+  opacity: 1;
+  background: radial-gradient(ellipse, rgba(0, 212, 170, 1) 0%, rgba(0, 212, 170, 0.5) 50%, transparent 80%);
+  filter: blur(8px);
+}
+
+.jarvis-buddy-avatar[data-thrust-dir="right"] .jarvis-buddy-thruster-glow::before {
+  left: auto;
+  right: -6px;
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 50%;
+  opacity: 1;
+  background: radial-gradient(ellipse, rgba(0, 212, 170, 1) 0%, rgba(0, 212, 170, 0.5) 50%, transparent 80%);
+  filter: blur(8px);
+}
+
+.jarvis-buddy-avatar[data-thrust-dir="up"] .jarvis-buddy-thruster-glow::before {
+  left: 25%;
+  top: -6px;
+  bottom: auto;
+  width: 50%;
+  height: 8px;
+  opacity: 0.9;
+  background: radial-gradient(ellipse, rgba(0, 212, 170, 0.9) 0%, rgba(0, 212, 170, 0.4) 50%, transparent 80%);
+  filter: blur(7px);
+}
+
+.jarvis-buddy-avatar[data-thrust-dir="down"] .jarvis-buddy-thruster-glow::before {
+  left: 25%;
+  bottom: -8px;
+  width: 50%;
+  height: 10px;
+  opacity: 1;
+  background: radial-gradient(ellipse, rgba(0, 212, 170, 1) 0%, rgba(0, 212, 170, 0.5) 50%, transparent 80%);
+  filter: blur(8px);
+}
+
+/* Hover ring — futuristic base disc */
+.jarvis-buddy-avatar::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  width: 70%;
+  height: 8px;
+  background: radial-gradient(ellipse, rgba(0, 212, 170, 0.25) 0%, transparent 70%);
+  border-radius: 50%;
+  opacity: 0.6;
+  transition: opacity 300ms ease, transform 300ms ease;
+  pointer-events: none;
+  filter: blur(4px);
+}
+
+.jarvis-buddy-avatar:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1.05);
+}
+
+.jarvis-buddy-avatar.dragging::after {
+  opacity: 0.3;
+  transform: translateX(-50%) scale(0.8);
+}
+
+/* SVG sizing */
+.jarvis-buddy-avatar svg {
+  width: 56px;
+  height: 56px;
+  filter: drop-shadow(0 0 8px rgba(0, 212, 170, 0.5));
+  transition: filter 250ms ease;
+}
+
+.jarvis-buddy-avatar:hover svg {
+  filter: drop-shadow(0 0 16px rgba(0, 212, 170, 0.8));
+}
+
+/* Eye blink animation */
+.jarvis-buddy-avatar .eva-eye-left,
+.jarvis-buddy-avatar .eva-eye-right {
+  animation: eva-blink 4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.jarvis-buddy-avatar .eva-eye-left {
+  animation-delay: 0s;
+}
+
+.jarvis-buddy-avatar .eva-eye-right {
+  animation-delay: 0.1s;
+}
+
+/* Hover — eyes brighten */
+.jarvis-buddy-avatar:hover .eva-eye-left,
+.jarvis-buddy-avatar:hover .eva-eye-right {
+  animation: eva-blink-fast 2s ease-in-out infinite, eva-eye-glow-pulse 1.5s ease-in-out infinite;
+}
+
+.jarvis-buddy-avatar:hover .eva-eye-left {
+  animation-delay: 0s, 0s;
+}
+
+.jarvis-buddy-avatar:hover .eva-eye-right {
+  animation-delay: 0.1s, 0.2s;
+}
+
+/* Dragging — eyes narrow (focused) */
+.jarvis-buddy-avatar.dragging .eva-eye-left,
+.jarvis-buddy-avatar.dragging .eva-eye-right {
+  animation: eva-eye-focus 0.3s ease-out forwards;
+}
+
+/* Scanline effect across body */
+.jarvis-buddy-avatar .scanline {
+  animation: eva-scan 4s ease-in-out infinite;
+  opacity: 0;
+}
+
+.jarvis-buddy-avatar:hover .scanline {
+  opacity: 0.6;
+}
+
+/* ============================================================
+   KEYFRAMES
+   ============================================================ */
+
+/* Idle floating — gentle bob */
+@keyframes eva-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* Hover floating — more energetic */
+@keyframes eva-float-hover {
+  0%, 100% {
+    transform: scale(1.12) translateY(-4px);
+  }
+  50% {
+    transform: scale(1.12) translateY(-10px);
+  }
+}
+
+/* Eye blink — slow relaxed */
+@keyframes eva-blink {
+  0%, 45%, 55%, 100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scaleY(0.15);
+    opacity: 0.7;
+  }
+}
+
+/* Fast blink when hovered */
+@keyframes eva-blink-fast {
+  0%, 40%, 50%, 100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  45% {
+    transform: scaleY(0.15);
+    opacity: 0.7;
+  }
+}
+
+/* Eye glow pulse */
+@keyframes eva-eye-glow-pulse {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 4px rgba(0, 212, 170, 0.7));
+  }
+  50% {
+    filter: brightness(1.5) drop-shadow(0 0 10px rgba(0, 212, 170, 1));
+  }
+}
+
+/* Eye focus (dragging) — narrow determined look */
+@keyframes eva-eye-focus {
+  to {
+    transform: scaleY(0.6);
+    filter: brightness(1.4) drop-shadow(0 0 6px rgba(0, 212, 170, 1));
+  }
+}
+
+/* Click flash — bright burst */
+@keyframes eva-click-flash {
+  0% {
+    box-shadow:
+      0 0 40px rgba(0, 212, 170, 0.7),
+      0 0 80px rgba(0, 212, 170, 0.3),
+      inset 0 0 30px rgba(0, 212, 170, 0.2),
+      0 0 0 1px rgba(0, 212, 170, 0.8);
+    border-color: rgba(0, 212, 170, 0.9);
+  }
+  50% {
+    box-shadow:
+      0 0 80px rgba(0, 212, 170, 1),
+      0 0 160px rgba(0, 212, 170, 0.5),
+      inset 0 0 50px rgba(0, 212, 170, 0.3),
+      0 0 0 2px rgba(0, 255, 212, 1);
+    border-color: rgba(0, 255, 212, 1);
+    transform: scale(1.15);
+  }
+  100% {
+    box-shadow:
+      0 0 40px rgba(0, 212, 170, 0.4),
+      0 0 80px rgba(0, 212, 170, 0.15),
+      inset 0 0 20px rgba(0, 212, 170, 0.05),
+      0 0 0 1px rgba(0, 212, 170, 0.2);
+    border-color: rgba(0, 212, 170, 0.2);
+    transform: scale(1);
+  }
+}
+
+/* Wall hit left — bounce back from left wall */
+@keyframes eva-wall-hit-left {
+  0% {
+    transform: translateX(0) rotate(0deg);
+  }
+  20% {
+    transform: translateX(8px) rotate(8deg);
+  }
+  40% {
+    transform: translateX(-4px) rotate(-4deg);
+  }
+  60% {
+    transform: translateX(2px) rotate(2deg);
+  }
+  80% {
+    transform: translateX(-1px) rotate(-1deg);
+  }
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+/* Wall hit right — bounce back from right wall */
+@keyframes eva-wall-hit-right {
+  0% {
+    transform: translateX(0) rotate(0deg);
+  }
+  20% {
+    transform: translateX(-8px) rotate(-8deg);
+  }
+  40% {
+    transform: translateX(4px) rotate(4deg);
+  }
+  60% {
+    transform: translateX(-2px) rotate(-2deg);
+  }
+  80% {
+    transform: translateX(1px) rotate(1deg);
+  }
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+/* Scanline sweep across body */
+@keyframes eva-scan {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.5;
+  }
+  90% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+/* Antenna pulse */
+@keyframes eva-antenna-pulse {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
